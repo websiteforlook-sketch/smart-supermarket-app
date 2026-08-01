@@ -11,7 +11,7 @@ def get_connection():
     return mysql.connector.connect(
         host="localhost",
         user="supermarket_user",
-        password="YOUR_PASSWORD_HERE",   # replace with your real password
+        password="@Krisha/!2007",   # replace with your real password
         database="supermarket_db"
     )
 
