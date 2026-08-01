@@ -1,9 +1,20 @@
+"""
+db.py — MySQL connection and all database helper functions.
+Uses the existing supermarket_db database (users, products, sales tables).
+"""
+
 import mysql.connector
 import pandas as pd
 import streamlit as st
 
 
+@st.cache_resource
 def get_connection():
+    """
+    Cached connection — Streamlit reuses this same connection across
+    reruns/page switches instead of opening a new one (with a fresh
+    SSL handshake) every single time. This is what was making the app slow.
+    """
     return mysql.connector.connect(
         host=st.secrets["DB_HOST"],
         user=st.secrets["DB_USER"],
@@ -13,10 +24,24 @@ def get_connection():
     )
 
 
+def _get_live_connection():
+    """
+    Returns the cached connection, transparently reconnecting if it
+    timed out or dropped (cloud DBs sometimes close idle connections).
+    """
+    conn = get_connection()
+    try:
+        conn.ping(reconnect=True, attempts=1, delay=0)
+    except mysql.connector.Error:
+        get_connection.clear()
+        conn = get_connection()
+    return conn
+
+
 # ---------------- USERS ----------------
 
 def create_user(shop_name, email, password_hash):
-    conn = get_connection()
+    conn = _get_live_connection()
     cursor = conn.cursor()
     try:
         cursor.execute(
@@ -29,23 +54,21 @@ def create_user(shop_name, email, password_hash):
         return False, "An account with this email already exists."
     finally:
         cursor.close()
-        conn.close()
 
 
 def get_user_by_email(email):
-    conn = get_connection()
+    conn = _get_live_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
     user = cursor.fetchone()
     cursor.close()
-    conn.close()
     return user
 
 
 # ---------------- PRODUCTS ----------------
 
 def add_product(user_id, name, category, price, stock_quantity, reorder_level, supplier):
-    conn = get_connection()
+    conn = _get_live_connection()
     cursor = conn.cursor()
     cursor.execute(
         """INSERT INTO products (user_id, name, category, price, stock_quantity, reorder_level, supplier)
@@ -54,11 +77,15 @@ def add_product(user_id, name, category, price, stock_quantity, reorder_level, s
     )
     conn.commit()
     cursor.close()
-    conn.close()
 
 
 def bulk_add_products(user_id, dataframe):
-    conn = get_connection()
+    """
+    Expects a DataFrame with columns:
+    name, category, price, stock_quantity, reorder_level, supplier
+    (from an uploaded CSV/Excel file)
+    """
+    conn = _get_live_connection()
     cursor = conn.cursor()
     for _, row in dataframe.iterrows():
         cursor.execute(
@@ -76,28 +103,23 @@ def bulk_add_products(user_id, dataframe):
         )
     conn.commit()
     cursor.close()
-    conn.close()
 
 
 def get_products(user_id):
-    conn = get_connection()
-    df = pd.read_sql("SELECT * FROM products WHERE user_id = %s", conn, params=(user_id,))
-    conn.close()
-    return df
+    conn = _get_live_connection()
+    return pd.read_sql("SELECT * FROM products WHERE user_id = %s", conn, params=(user_id,))
 
 
 def get_low_stock_products(user_id):
-    conn = get_connection()
-    df = pd.read_sql(
+    conn = _get_live_connection()
+    return pd.read_sql(
         "SELECT * FROM products WHERE user_id = %s AND stock_quantity <= reorder_level",
         conn, params=(user_id,)
     )
-    conn.close()
-    return df
 
 
 def update_stock_after_sale(product_id, quantity_sold):
-    conn = get_connection()
+    conn = _get_live_connection()
     cursor = conn.cursor()
     cursor.execute(
         "UPDATE products SET stock_quantity = stock_quantity - %s WHERE product_id = %s",
@@ -105,13 +127,12 @@ def update_stock_after_sale(product_id, quantity_sold):
     )
     conn.commit()
     cursor.close()
-    conn.close()
 
 
 # ---------------- SALES ----------------
 
 def add_sale(user_id, product_id, quantity_sold, total_amount):
-    conn = get_connection()
+    conn = _get_live_connection()
     cursor = conn.cursor()
     cursor.execute(
         """INSERT INTO sales (user_id, product_id, quantity_sold, total_amount)
@@ -120,12 +141,11 @@ def add_sale(user_id, product_id, quantity_sold, total_amount):
     )
     conn.commit()
     cursor.close()
-    conn.close()
     update_stock_after_sale(product_id, quantity_sold)
 
 
 def get_sales(user_id):
-    conn = get_connection()
+    conn = _get_live_connection()
     query = """
         SELECT s.sale_id, p.name AS product_name, p.category, s.quantity_sold,
                s.total_amount, s.sale_date
@@ -134,9 +154,7 @@ def get_sales(user_id):
         WHERE s.user_id = %s
         ORDER BY s.sale_date DESC
     """
-    df = pd.read_sql(query, conn, params=(user_id,))
-    conn.close()
-    return df
+    return pd.read_sql(query, conn, params=(user_id,))
 
 
 def get_sales_summary(user_id):
