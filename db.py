@@ -1,18 +1,15 @@
-"""
-db.py — MySQL connection and all database helper functions.
-Uses the existing supermarket_db database (users, products, sales tables).
-"""
-
 import mysql.connector
 import pandas as pd
+import streamlit as st
 
 
 def get_connection():
     return mysql.connector.connect(
-        host="localhost",
-        user="supermarket_user",
-        password="@Krisha/!2007",   # replace with your real password
-        database="supermarket_db"
+        host=st.secrets["DB_HOST"],
+        user=st.secrets["DB_USER"],
+        password=st.secrets["DB_PASSWORD"],
+        database=st.secrets["DB_NAME"],
+        port=st.secrets.get("DB_PORT", 3306),
     )
 
 
@@ -61,11 +58,6 @@ def add_product(user_id, name, category, price, stock_quantity, reorder_level, s
 
 
 def bulk_add_products(user_id, dataframe):
-    """
-    Expects a DataFrame with columns:
-    name, category, price, stock_quantity, reorder_level, supplier
-    (from an uploaded CSV/Excel file)
-    """
     conn = get_connection()
     cursor = conn.cursor()
     for _, row in dataframe.iterrows():
