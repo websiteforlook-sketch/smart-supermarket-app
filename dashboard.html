@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — SmartMart</title>
+<link rel="stylesheet" href="static/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="brand"><div class="mark"></div> SmartMart</div>
+    <div class="sidebar-tag">STORE OS</div>
+    <div class="nav-item active"><span>▦</span> Dashboard</div>
+    <div class="nav-item"><span>📦</span> Products</div>
+    <div class="nav-item"><span>💳</span> Sales</div>
+    <div class="nav-item"><span>📊</span> Analytics</div>
+    <div class="nav-item"><span>📁</span> Reports</div>
+    <a href="index.html" class="nav-item" style="margin-top:20px;"><span>↩</span> Back to website</a>
+    <div class="sidebar-foot">LOGGED IN AS<br><strong style="color:#fff; font-family:'Inter',sans-serif;">Rahul Supermart</strong></div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1>Dashboard</h1>
+        <div class="shop">RAHUL SUPERMART · 28 JUL 2026</div>
+      </div>
+      <a href="login.html" class="btn btn-ghost">Log out</a>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="accent" style="background:var(--register)"></div>
+        <div class="label">TOTAL REVENUE</div>
+        <div class="value">₹4,82,300</div>
+        <div class="delta up">▲ 12.4% vs last month</div>
+      </div>
+      <div class="kpi"><div class="accent" style="background:var(--gold)"></div>
+        <div class="label">TOTAL SALES</div>
+        <div class="value">1,284</div>
+        <div class="delta up">▲ 8.1% vs last month</div>
+      </div>
+      <div class="kpi"><div class="accent" style="background:var(--ink)"></div>
+        <div class="label">PRODUCTS IN STOCK</div>
+        <div class="value">342</div>
+        <div class="delta" style="color:var(--grey)">across 12 categories</div>
+      </div>
+      <div class="kpi"><div class="accent" style="background:var(--danger)"></div>
+        <div class="label">LOW STOCK ALERTS</div>
+        <div class="value">6</div>
+        <div class="delta warn">▲ needs restocking</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <h3>Sales trend — last 7 days</h3>
+        <canvas id="lineChart" height="130"></canvas>
+      </div>
+      <div class="panel">
+        <h3>Sales by category</h3>
+        <canvas id="pieChart" height="150"></canvas>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <h3>Recent sales</h3>
+        <table>
+          <tr><th>Product</th><th>Qty</th><th>Amount</th><th>Date</th></tr>
+          <tr><td>Basmati Rice 5kg</td><td>2</td><td>₹900</td><td>28 Jul</td></tr>
+          <tr><td>Amul Milk 1L</td><td>5</td><td>₹310</td><td>28 Jul</td></tr>
+          <tr><td>Colgate Toothpaste</td><td>3</td><td>₹255</td><td>27 Jul</td></tr>
+          <tr><td>Tata Salt 1kg</td><td>10</td><td>₹250</td><td>27 Jul</td></tr>
+          <tr><td>Maggi Noodles</td><td>4</td><td>₹56</td><td>26 Jul</td></tr>
+        </table>
+      </div>
+      <div class="panel">
+        <h3>Low stock products</h3>
+        <div class="low-item"><div><div class="n">Maggi Noodles</div><div class="c">SNACKS</div></div><div class="stockval">5 left</div></div>
+        <div class="low-item"><div><div class="n">Sunflower Oil 1L</div><div class="c">GROCERY</div></div><div class="stockval">8 left</div></div>
+        <div class="low-item"><div><div class="n">Colgate Toothpaste</div><div class="c">PERSONAL CARE</div></div><div class="stockval">4 left</div></div>
+        <div class="low-item"><div><div class="n">Britannia Bread</div><div class="c">BAKERY</div></div><div class="stockval">6 left</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  new Chart(document.getElementById('lineChart'), {
+    type:'line',
+    data:{
+      labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      datasets:[{
+        label:'Revenue (₹)',
+        data:[42000,38000,51000,47000,60000,72000,68000],
+        borderColor:'#2F6B4F',
+        backgroundColor:'rgba(47,107,79,0.1)',
+        fill:true, tension:.35, pointRadius:3, pointBackgroundColor:'#2F6B4F'
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false}},
+      scales:{ y:{ticks:{callback:v=>'₹'+(v/1000)+'k', font:{family:'JetBrains Mono'}}, grid:{color:'#EFF1EE'}}, x:{grid:{display:false}, ticks:{font:{family:'JetBrains Mono'}}} }
+    }
+  });
+
+  new Chart(document.getElementById('pieChart'), {
+    type:'doughnut',
+    data:{
+      labels:['Grocery','Dairy','Snacks','Personal Care','Bakery'],
+      datasets:[{
+        data:[38,22,18,14,8],
+        backgroundColor:['#14322A','#2F6B4F','#C08829','#7FA08D','#DCC48A'],
+        borderWidth:2, borderColor:'#fff'
+      }]
+    },
+    options:{ plugins:{ legend:{ position:'bottom', labels:{boxWidth:10, font:{size:11, family:'Inter'}} } } }
+  });
+</script>
+
+</body>
+</html>

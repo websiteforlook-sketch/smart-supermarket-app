@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log in — SmartMart</title>
+<link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="brand"><div class="mark"></div> SmartMart</a>
+  <div class="nav-links">
+    <a href="index.html#how">How it works</a>
+    <a href="index.html#features">Features</a>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-actions">
+    <a href="signup.html" class="btn btn-fill">Start free</a>
+  </div>
+</nav>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="rs">SMARTMART · ACCOUNT ACCESS</div>
+    <h1>Welcome back</h1>
+    <p class="sub">Log in to see today's numbers</p>
+    <form onsubmit="event.preventDefault(); window.location.href='dashboard.html';">
+      <div class="field">
+        <label>EMAIL</label>
+        <input type="email" placeholder="shopowner@example.com" required>
+      </div>
+      <div class="field">
+        <label>PASSWORD</label>
+        <input type="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn btn-fill" style="width:100%; padding:12px; margin-top:6px;">Log in</button>
+    </form>
+    <p class="auth-foot">New here? <a href="signup.html">Create an account</a></p>
+  </div>
+</div>
+
+</body>
+</html>
