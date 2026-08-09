@@ -26,6 +26,12 @@ def get_connection():
     TiDB additionally requires certificate verification, so we always point
     at a trusted CA bundle via certifi (works the same on Streamlit Cloud's
     Linux runtime as it does locally).
+
+    use_pure=True forces the pure-Python MySQL driver instead of the
+    compiled C extension. The C extension has crashed with low-level
+    memory-corruption errors ("free(): invalid next size") on some
+    Streamlit Cloud runtimes running very new Python versions it wasn't
+    built against — the pure-Python path avoids that entirely.
     """
     try:
         conn = mysql.connector.connect(
@@ -37,6 +43,7 @@ def get_connection():
             ssl_ca=certifi.where(),
             ssl_verify_identity=True,
             autocommit=True,
+            use_pure=True,
         )
         return conn
     except Error as e:
