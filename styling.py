@@ -1,0 +1,382 @@
+"""
+styling.py — Custom CSS for Smart Supermarket Inventory & Sales Analytics System.
+
+Design tokens
+-------------
+Colors:
+  --ink        #0B3B2E   deep ledger green (primary)
+  --ink-light  #14543F   secondary green (hover/accents)
+  --gold       #C9973E   receipt-stamp gold (highlight/CTA)
+  --paper      #FAF7F0   warm paper background
+  --card       #FFFFFF   card surface
+  --line       #E7E1D3   hairline / dividers
+  --ink-text   #1F2A24   primary text
+  --muted      #6B7368   secondary text
+  --danger     #B3432B   out-of-stock / error
+  --success    #2E7D4F   in-stock / success
+
+Type:
+  Display  — 'Fraunces'      (headings, KPI numbers)
+  Body     — 'Inter'         (all UI text)
+  Mono     — 'JetBrains Mono' (barcodes, prices, table figures)
+
+Signature: KPI cards styled like little receipt stubs (dashed perforation edge)
+"""
+
+import streamlit as st
+
+CSS = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+    --ink: #0B3B2E;
+    --ink-light: #14543F;
+    --gold: #C9973E;
+    --paper: #FAF7F0;
+    --card: #FFFFFF;
+    --line: #E7E1D3;
+    --ink-text: #1F2A24;
+    --muted: #6B7368;
+    --danger: #B3432B;
+    --success: #2E7D4F;
+}
+
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif;
+    color: var(--ink-text);
+}
+
+.stApp {
+    background: var(--paper);
+}
+
+h1, h2, h3 {
+    font-family: 'Fraunces', serif !important;
+    color: var(--ink) !important;
+    letter-spacing: -0.01em;
+}
+
+/* ---------- Sidebar ---------- */
+section[data-testid="stSidebar"] {
+    background: var(--ink);
+    border-right: 1px solid var(--line);
+}
+section[data-testid="stSidebar"] * {
+    color: #F4F1E8 !important;
+}
+section[data-testid="stSidebar"] .stRadio label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+}
+
+/* ---------- Brand header ---------- */
+.brand-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 4px 0 18px 0;
+    border-bottom: 2px dashed var(--line);
+    margin-bottom: 22px;
+}
+.brand-header .mark {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 1.9rem;
+    color: var(--ink);
+}
+.brand-header .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* ---------- KPI receipt-stub cards ---------- */
+.kpi-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+.kpi-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px 20px 16px 20px;
+    flex: 1 1 190px;
+    position: relative;
+    box-shadow: 0 1px 2px rgba(11,59,46,0.04), 0 6px 16px rgba(11,59,46,0.05);
+    border-bottom: 3px solid var(--gold);
+}
+.kpi-card .kpi-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.kpi-card .kpi-value {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 2rem;
+    color: var(--ink);
+    margin-top: 4px;
+}
+.kpi-card .kpi-sub {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 2px;
+}
+
+/* ---------- Generic content card ---------- */
+.panel {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 22px 24px;
+    box-shadow: 0 1px 2px rgba(11,59,46,0.04), 0 6px 16px rgba(11,59,46,0.04);
+    margin-bottom: 18px;
+}
+
+/* ---------- Badges ---------- */
+.badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 20px;
+    letter-spacing: 0.03em;
+}
+.badge-in { background: rgba(46,125,79,0.12); color: var(--success); }
+.badge-low { background: rgba(201,151,62,0.16); color: #8A6417; }
+.badge-out { background: rgba(179,67,43,0.12); color: var(--danger); }
+
+/* ---------- Buttons ---------- */
+.stButton > button {
+    background: var(--ink);
+    color: #FAF7F0;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1.2rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.15s ease;
+}
+.stButton > button:hover {
+    background: var(--ink-light);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(11,59,46,0.25);
+}
+.stButton > button[kind="primary"] {
+    background: var(--gold);
+    color: var(--ink);
+}
+.stButton > button[kind="primary"]:hover {
+    background: #b7862f;
+    color: #fff;
+}
+
+/* ---------- Inputs ---------- */
+.stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"] {
+    border-radius: 8px !important;
+    border: 1px solid var(--line) !important;
+}
+.stTextInput input:focus, .stNumberInput input:focus {
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 0 1px var(--gold) !important;
+}
+
+/* ---------- Tabs ---------- */
+.stTabs [data-baseweb="tab-list"] { gap: 4px; }
+.stTabs [data-baseweb="tab"] {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    color: var(--muted);
+    border-radius: 8px 8px 0 0;
+}
+.stTabs [aria-selected="true"] {
+    color: var(--ink) !important;
+    border-bottom: 3px solid var(--gold) !important;
+}
+
+/* ---------- Dataframes ---------- */
+[data-testid="stDataFrame"] {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* ---------- Barcode field ---------- */
+.barcode-scan-box {
+    font-family: 'JetBrains Mono', monospace;
+    background: repeating-linear-gradient(90deg, var(--ink) 0 6px, transparent 6px 12px);
+    height: 4px;
+    border-radius: 2px;
+    margin: 6px 0 16px 0;
+    opacity: 0.5;
+}
+
+/* ---------- Auth screen ---------- */
+@keyframes authRise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.auth-wrap {
+    max-width: 440px;
+    margin: 24px auto 0 auto;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 40px 38px 32px 38px;
+    box-shadow: 0 1px 2px rgba(11,59,46,0.04), 0 24px 60px rgba(11,59,46,0.12);
+    animation: authRise 0.45s ease-out;
+}
+.auth-wrap h2 { margin-bottom: 2px; }
+.auth-sub { color: var(--muted); font-size: 0.92rem; margin-bottom: 24px; }
+
+.auth-hero {
+    background: linear-gradient(155deg, var(--ink) 0%, #0E4A38 55%, var(--ink-light) 100%);
+    border-radius: 18px;
+    padding: 44px 34px;
+    height: 100%;
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(11,59,46,0.25);
+}
+.auth-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+        transparent, transparent 27px, rgba(244,241,232,0.05) 28px
+    );
+    pointer-events: none;
+}
+.auth-hero .hero-mark {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 2.4rem;
+    color: #F4F1E8;
+    margin-bottom: 6px;
+    position: relative;
+}
+.auth-hero .hero-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 26px;
+    position: relative;
+}
+.auth-hero .hero-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: rgba(244,241,232,0.88);
+    font-size: 0.94rem;
+    margin-bottom: 14px;
+    position: relative;
+    line-height: 1.4;
+}
+.auth-hero .hero-line .dot {
+    color: var(--gold);
+    font-size: 1.1rem;
+    line-height: 1;
+    margin-top: 1px;
+}
+.auth-hero .hero-receipt {
+    margin-top: 30px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.76rem;
+    color: rgba(244,241,232,0.55);
+    border-top: 1px dashed rgba(244,241,232,0.25);
+    padding-top: 16px;
+    position: relative;
+}
+
+/* ---------- Misc ---------- */
+hr { border-color: var(--line) !important; }
+.small-muted { color: var(--muted); font-size: 0.82rem; }
+footer, #MainMenu { visibility: hidden; }
+
+/* ---------- General polish: hover lift on cards ---------- */
+.kpi-card, .panel {
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.kpi-card:hover {
+    box-shadow: 0 2px 4px rgba(11,59,46,0.06), 0 14px 28px rgba(11,59,46,0.10);
+    transform: translateY(-2px);
+}
+
+/* ---------- Sidebar active nav item ---------- */
+section[data-testid="stSidebar"] .stRadio > div {
+    gap: 4px;
+}
+section[data-testid="stSidebar"] .stRadio label {
+    padding: 8px 10px;
+    border-radius: 8px;
+    transition: background 0.15s ease;
+}
+section[data-testid="stSidebar"] .stRadio label:hover {
+    background: rgba(244,241,232,0.08);
+}
+
+/* ---------- Forgot password link styling ---------- */
+.link-btn button {
+    background: transparent !important;
+    color: var(--muted) !important;
+    font-weight: 500 !important;
+    padding: 0 !important;
+    text-decoration: underline;
+    box-shadow: none !important;
+}
+.link-btn button:hover {
+    background: transparent !important;
+    color: var(--ink) !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+</style>
+"""
+
+
+def inject_css():
+    st.markdown(CSS, unsafe_allow_html=True)
+
+
+def brand_header(subtitle: str):
+    st.markdown(
+        f"""
+        <div class="brand-header">
+            <span class="mark">SmartMart</span>
+            <span class="tag">{subtitle}</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def kpi_card_html(label: str, value: str, sub: str = "", icon: str = "") -> str:
+    return f"""
+    <div class="kpi-card">
+        <div class="kpi-label">{icon} {label}</div>
+        <div class="kpi-value">{value}</div>
+        <div class="kpi-sub">{sub}</div>
+    </div>
+    """
+
+
+def stock_badge(stock: int) -> str:
+    if stock <= 0:
+        return '<span class="badge badge-out">OUT OF STOCK</span>'
+    elif stock <= 5:
+        return f'<span class="badge badge-low">LOW · {stock} left</span>'
+    return f'<span class="badge badge-in">IN STOCK · {stock}</span>'
