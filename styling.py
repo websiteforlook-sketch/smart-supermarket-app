@@ -48,7 +48,16 @@ html, body, [class*="css"] {
 }
 
 .stApp {
-    background: var(--paper);
+    background:
+        radial-gradient(circle at 12% 8%, rgba(201,151,62,0.07) 0%, transparent 42%),
+        radial-gradient(circle at 88% 92%, rgba(11,59,46,0.06) 0%, transparent 45%),
+        var(--paper);
+}
+
+.block-container {
+    padding-top: 2.2rem !important;
+    padding-bottom: 3rem !important;
+    max-width: 1180px;
 }
 
 h1, h2, h3 {
@@ -59,7 +68,7 @@ h1, h2, h3 {
 
 /* ---------- Sidebar ---------- */
 section[data-testid="stSidebar"] {
-    background: var(--ink);
+    background: linear-gradient(180deg, var(--ink) 0%, #0E4535 100%);
     border-right: 1px solid var(--line);
 }
 section[data-testid="stSidebar"] * {
@@ -70,40 +79,101 @@ section[data-testid="stSidebar"] .stRadio label {
     font-weight: 500;
 }
 
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0 18px 0;
+}
+.sidebar-brand-mark {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 10px;
+    background: rgba(244,241,232,0.08);
+    border: 1px solid rgba(244,241,232,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+.sidebar-brand-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 1.35rem;
+    letter-spacing: -0.01em;
+}
+.sidebar-shop {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 0.98rem;
+    margin-top: -6px;
+    color: #F4F1E8 !important;
+}
+.sidebar-owner {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
+    color: rgba(244,241,232,0.55) !important;
+    margin-top: 1px;
+}
+.sidebar-divider {
+    border-top: 1px dashed rgba(244,241,232,0.2);
+    margin: 16px 0 14px 0;
+}
+.sidebar-spacer { margin-top: 14px; }
+
 /* ---------- Brand header ---------- */
 .brand-header {
     display: flex;
     align-items: baseline;
-    gap: 10px;
-    padding: 4px 0 18px 0;
+    gap: 12px;
+    padding: 4px 0 16px 0;
     border-bottom: 2px dashed var(--line);
-    margin-bottom: 22px;
+    margin-bottom: 26px;
 }
 .brand-header .mark {
     font-family: 'Fraunces', serif;
     font-weight: 700;
-    font-size: 1.9rem;
+    font-size: 2.05rem;
     color: var(--ink);
+    letter-spacing: -0.015em;
 }
 .brand-header .tag {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.72rem;
     color: var(--gold);
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
+    background: rgba(201,151,62,0.12);
+    padding: 3px 9px;
+    border-radius: 20px;
 }
 
 /* ---------- KPI receipt-stub cards ---------- */
-.kpi-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+.kpi-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 8px; margin-top: 10px; }
 .kpi-card {
     background: var(--card);
     border: 1px solid var(--line);
     border-radius: 10px;
-    padding: 18px 20px 16px 20px;
+    padding: 22px 20px 16px 20px;
     flex: 1 1 190px;
     position: relative;
     box-shadow: 0 1px 2px rgba(11,59,46,0.04), 0 6px 16px rgba(11,59,46,0.05);
-    border-bottom: 3px solid var(--gold);
+    border-bottom: 2px solid var(--gold);
+}
+/* torn-perforation edge along the top, like a receipt stub */
+.kpi-card::before {
+    content: "";
+    position: absolute;
+    top: -7px;
+    left: 6px;
+    right: 6px;
+    height: 14px;
+    background-image: radial-gradient(circle at 7px 7px, var(--paper) 6px, transparent 6.5px);
+    background-size: 14px 14px;
+    background-repeat: repeat-x;
+    background-position: 0 0;
 }
 .kpi-card .kpi-label {
     font-family: 'JetBrains Mono', monospace;
@@ -118,9 +188,9 @@ section[data-testid="stSidebar"] .stRadio label {
 .kpi-card .kpi-value {
     font-family: 'Fraunces', serif;
     font-weight: 700;
-    font-size: 2rem;
+    font-size: 2.1rem;
     color: var(--ink);
-    margin-top: 4px;
+    margin-top: 6px;
 }
 .kpi-card .kpi-sub {
     font-size: 0.78rem;
@@ -130,12 +200,17 @@ section[data-testid="stSidebar"] .stRadio label {
 
 /* ---------- Generic content card ---------- */
 .panel {
-    background: var(--card);
+    background:
+        repeating-linear-gradient(to bottom, transparent, transparent 27px, rgba(11,59,46,0.028) 28px),
+        var(--card);
     border: 1px solid var(--line);
     border-radius: 12px;
-    padding: 22px 24px;
+    padding: 24px 26px;
     box-shadow: 0 1px 2px rgba(11,59,46,0.04), 0 6px 16px rgba(11,59,46,0.04);
     margin-bottom: 18px;
+}
+.panel .stMarkdown h3, .panel h3 {
+    margin-top: 0 !important;
 }
 
 /* ---------- Badges ---------- */
@@ -318,15 +393,38 @@ footer, #MainMenu { visibility: hidden; }
 
 /* ---------- Sidebar active nav item ---------- */
 section[data-testid="stSidebar"] .stRadio > div {
-    gap: 4px;
+    gap: 3px;
 }
 section[data-testid="stSidebar"] .stRadio label {
-    padding: 8px 10px;
-    border-radius: 8px;
+    padding: 10px 12px;
+    border-radius: 10px;
     transition: background 0.15s ease;
+    margin-bottom: 1px;
 }
 section[data-testid="stSidebar"] .stRadio label:hover {
     background: rgba(244,241,232,0.08);
+}
+section[data-testid="stSidebar"] .stRadio label:has(input:checked) {
+    background: rgba(201,151,62,0.18);
+}
+section[data-testid="stSidebar"] .stRadio label:has(input:checked) p {
+    color: var(--gold) !important;
+    font-weight: 700 !important;
+}
+
+/* Sidebar buttons (e.g. Log out) need their own treatment — the default
+   solid-ink button is invisible against the ink-green sidebar background. */
+section[data-testid="stSidebar"] .stButton > button {
+    background: transparent;
+    border: 1px solid rgba(244,241,232,0.28);
+    color: #F4F1E8 !important;
+}
+section[data-testid="stSidebar"] .stButton > button:hover {
+    background: rgba(244,241,232,0.1);
+    border-color: var(--gold);
+    color: #fff !important;
+    transform: none;
+    box-shadow: none;
 }
 
 /* ---------- Forgot password link styling ---------- */
