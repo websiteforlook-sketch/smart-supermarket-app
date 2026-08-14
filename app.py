@@ -160,8 +160,15 @@ def auth_screen():
                 else:
                     ok, msg = db.create_user(nu.strip(), np1, shop_name, owner_name)
                     if ok:
-                        st.success(msg + " You can log in now.")
-                        st.session_state.auth_view = "login"
+                        user = db.verify_user(nu.strip(), np1)
+                        st.session_state.user = {
+                            "id": user["id"],
+                            "username": user["username"],
+                            "shop_name": user.get("shop_name") or "",
+                            "owner_name": user.get("owner_name") or "",
+                        }
+                        st.toast(f"Welcome, {shop_name.strip()}! Your shop is set up.", icon="🎉")
+                        st.rerun()
                     else:
                         st.error(msg)
 
@@ -530,24 +537,37 @@ def main():
 
     with st.sidebar:
         st.markdown(
-            '<div style="font-family:Fraunces,serif;font-weight:700;font-size:1.5rem;'
-            'margin-bottom:2px;">🧾 SmartMart</div>',
+            '<div class="sidebar-brand">'
+            '<div class="sidebar-brand-mark">🧾</div>'
+            '<div class="sidebar-brand-name">SmartMart</div>'
+            '</div>',
             unsafe_allow_html=True,
         )
         shop = st.session_state.user.get("shop_name") or ""
         owner = st.session_state.user.get("owner_name") or st.session_state.user["username"]
         if shop:
-            st.caption(f"{shop} · {owner}")
+            st.markdown(f'<div class="sidebar-shop">{shop}</div>'
+                        f'<div class="sidebar-owner">{owner}</div>', unsafe_allow_html=True)
         else:
-            st.caption(f"Signed in as {st.session_state.user['username']}")
-        st.write("")
-        page = st.radio(
+            st.markdown(f'<div class="sidebar-owner">Signed in as '
+                        f'{st.session_state.user["username"]}</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
+
+        nav_map = {
+            "🧭  Dashboard": "Dashboard",
+            "📦  Products": "Products",
+            "🧾  Sales": "Sales",
+            "📊  Reports": "Reports",
+        }
+        nav_choice = st.radio(
             "Navigate",
-            ["Dashboard", "Products", "Sales", "Reports"],
+            list(nav_map.keys()),
             label_visibility="collapsed",
         )
-        st.write("")
-        if st.button("Log out", use_container_width=True):
+        page = nav_map[nav_choice]
+
+        st.markdown('<div class="sidebar-spacer"></div>', unsafe_allow_html=True)
+        if st.button("↩ Log out", use_container_width=True):
             st.session_state.user = None
             st.session_state.barcode_lookup = None
             st.session_state.auth_view = "login"
