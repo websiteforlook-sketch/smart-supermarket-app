@@ -577,6 +577,7 @@ def main():
             st.markdown(f'<div class="sidebar-owner">Signed in as '
                         f'{st.session_state.user["username"]}</div>', unsafe_allow_html=True)
         st.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
+        st.markdown('<a href="https://websiteforlook-sketch.github.io/-smartmart-landing/"target="_blank" style="color:#E7C077;font-size:0.85rem;text-decoration:none;">🌐 View landing page</a>', unsafe_allow_html=True) )
 
         nav_map = {
             "🧭  Dashboard": "Dashboard",
