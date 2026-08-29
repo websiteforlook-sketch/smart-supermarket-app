@@ -1,9 +1,6 @@
 """
 app.py — Smart Supermarket Inventory & Sales Analytics System
 Streamlit + TiDB Cloud (MySQL-compatible) + Pandas/Matplotlib + OpenPyXL
-
-Group 47 — Dept. of Computer Engineering, R. C. Technical Institute, Ahmedabad
-Guide: Prof. Soniya Dadhania
 """
 
 import io
