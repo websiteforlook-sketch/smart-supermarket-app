@@ -112,39 +112,45 @@ def _auth_hero():
         <div class="auth-hero">
             <div class="hero-orb hero-orb-1"></div>
             <div class="hero-orb hero-orb-2"></div>
-            <div class="hero-topline">
-                <span class="hero-topline-dot"></span>
-                {i18n.t("hero_eyebrow")}
-            </div>
-            <div class="hero-mark">🧾 SmartMart</div>
-            <div class="hero-headline">{i18n.t("hero_headline")}</div>
-            <div class="hero-sub">
-                {i18n.t("hero_sub")}
-            </div>
-            <div class="hero-grid">
-                <div class="hero-feature">
-                    <div class="hero-feature-icon">📦</div>
-                    <div class="hero-feature-title">{i18n.t("feat_stock_title")}</div>
-                    <div class="hero-feature-desc">{i18n.t("feat_stock_desc")}</div>
-                </div>
-                <div class="hero-feature">
-                    <div class="hero-feature-icon">🔍</div>
-                    <div class="hero-feature-title">{i18n.t("feat_barcode_title")}</div>
-                    <div class="hero-feature-desc">{i18n.t("feat_barcode_desc")}</div>
-                </div>
-                <div class="hero-feature">
-                    <div class="hero-feature-icon">📊</div>
-                    <div class="hero-feature-title">{i18n.t("feat_dash_title")}</div>
-                    <div class="hero-feature-desc">{i18n.t("feat_dash_desc")}</div>
-                </div>
-                <div class="hero-feature">
-                    <div class="hero-feature-icon">⬇</div>
-                    <div class="hero-feature-title">{i18n.t("feat_export_title")}</div>
-                    <div class="hero-feature-desc">{i18n.t("feat_export_desc")}</div>
+            <div class="hero-top">
+                <div class="hero-mark">🧾 SmartMart</div>
+                <div class="hero-topline">
+                    <span class="hero-topline-dot"></span>
+                    {i18n.t("hero_eyebrow")}
                 </div>
             </div>
-            <div class="hero-receipt">
-                GROUP 47 · R.C. TECHNICAL INSTITUTE, AHMEDABAD
+            <div class="hero-mid">
+                <div class="hero-script">{i18n.t("hero_script")}</div>
+                <div class="hero-headline">{i18n.t("hero_caps")}</div>
+                <div class="hero-sub">
+                    {i18n.t("hero_sub")}
+                </div>
+                <div class="hero-grid">
+                    <div class="hero-feature">
+                        <div class="hero-feature-icon">📦</div>
+                        <div class="hero-feature-title">{i18n.t("feat_stock_title")}</div>
+                        <div class="hero-feature-desc">{i18n.t("feat_stock_desc")}</div>
+                    </div>
+                    <div class="hero-feature">
+                        <div class="hero-feature-icon">🔍</div>
+                        <div class="hero-feature-title">{i18n.t("feat_barcode_title")}</div>
+                        <div class="hero-feature-desc">{i18n.t("feat_barcode_desc")}</div>
+                    </div>
+                    <div class="hero-feature">
+                        <div class="hero-feature-icon">📊</div>
+                        <div class="hero-feature-title">{i18n.t("feat_dash_title")}</div>
+                        <div class="hero-feature-desc">{i18n.t("feat_dash_desc")}</div>
+                    </div>
+                    <div class="hero-feature">
+                        <div class="hero-feature-icon">⬇</div>
+                        <div class="hero-feature-title">{i18n.t("feat_export_title")}</div>
+                        <div class="hero-feature-desc">{i18n.t("feat_export_desc")}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-bottom-bar">
+                <div class="hero-bottom-left">A student project, built for real shopkeepers.</div>
+                <div class="hero-bottom-right">GROUP 47<br/>R.C. TECHNICAL INSTITUTE, AHMEDABAD</div>
             </div>
         </div>
         """,
@@ -295,7 +301,7 @@ def page_dashboard(user_id):
         f"""
         <div class="welcome-hero">
             <div class="welcome-hero-text">
-                <div class="welcome-eyebrow">{greeting.upper()}</div>
+                <div class="welcome-script">{greeting},</div>
                 <div class="welcome-title">{owner.split()[0] if owner else 'there'} 👋
                     {f'<span class="welcome-shop">— {shop}</span>' if shop else ''}</div>
                 <div class="welcome-sub">{i18n.t("welcome_sub")}</div>
