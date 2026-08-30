@@ -83,12 +83,15 @@ html, body, [class*="css"] {
 }
 .stApp { background: var(--cream); }
 
+@keyframes topBarSlide { from { background-position: 0 0; } to { background-position: -48px 0; } }
 [data-testid="stAppViewContainer"]::before {
     content: "";
     position: fixed;
     top: 0; left: 0; right: 0;
     height: 6px;
     background: repeating-linear-gradient(90deg, var(--orange) 0 24px, var(--lime) 24px 48px);
+    background-size: 48px 100%;
+    animation: topBarSlide 2.2s linear infinite;
     z-index: 999999;
 }
 
@@ -105,14 +108,17 @@ h1, h2, h3 {
     letter-spacing: -0.02em;
 }
 
-/* ---------- Squiggle divider (inline SVG, reused everywhere) ---------- */
+/* ---------- Squiggle divider (seamless repeating wave tile, animated) ---------- */
+@keyframes squiggleMove { from { background-position-x: 0; } to { background-position-x: -24px; } }
 .squiggle {
-    width: 92px; height: 18px; margin: 0 0 14px 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='92' height='18' viewBox='0 0 92 18'%3E%3Cpath d='M2 9c4-8 8-8 12 0s8 8 12 0 8-8 12 0 8 8 12 0 8-8 12 0 8 8 12 0 8-8 12 0' stroke='%23E2623B' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
+    width: 96px; height: 18px; margin: 0 0 14px 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='18' viewBox='0 0 24 18'%3E%3Cpath d='M0 9C4 1 8 1 12 9C16 17 20 17 24 9' stroke='%23E2623B' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: repeat-x;
+    background-size: 24px 18px;
+    animation: squiggleMove 1.4s linear infinite;
 }
 .squiggle-lime {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='92' height='18' viewBox='0 0 92 18'%3E%3Cpath d='M2 9c4-8 8-8 12 0s8 8 12 0 8-8 12 0 8 8 12 0 8-8 12 0 8 8 12 0' stroke='%23E7F17A' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='18' viewBox='0 0 24 18'%3E%3Cpath d='M0 9C4 1 8 1 12 9C16 17 20 17 24 9' stroke='%23E7F17A' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
 /* ---------- Sidebar ---------- */
@@ -470,7 +476,20 @@ div[class*="st-key-auth_wrap"] div[data-testid="stForm"] {
     border-radius: 20px;
     padding: 30px 28px;
     box-shadow: 0 20px 50px rgba(20,52,39,0.1);
-    border-top: 4px solid var(--orange);
+    position: relative;
+    overflow: hidden;
+}
+@keyframes stripeSlide { from { background-position: 0 0; } to { background-position: -64px 0; } }
+div[class*="st-key-auth_wrap"] div[data-testid="stForm"]::before {
+    content: "";
+    position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: repeating-linear-gradient(
+        90deg,
+        var(--orange) 0 16px,
+        var(--orange-soft) 16px 32px
+    );
+    background-size: 64px 100%;
+    animation: stripeSlide 2.4s linear infinite;
 }
 div[class*="st-key-auth_wrap"] div[data-testid="stRadio"] {
     text-align: center; margin-bottom: 24px;
