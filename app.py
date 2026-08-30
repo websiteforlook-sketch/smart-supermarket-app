@@ -15,22 +15,75 @@ import matplotlib.pyplot as plt
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils.dataframe import dataframe_to_rows
+from PIL import Image, ImageOps, ImageEnhance, ImageFilter
+
+try:
+    from pyzbar.pyzbar import decode as _zbar_decode
+    PYZBAR_AVAILABLE = True
+except Exception:
+    # pyzbar needs the system library libzbar0 (see packages.txt). If it's
+    # missing on this deployment for any reason, camera scanning degrades
+    # gracefully to "not available" instead of crashing the whole app.
+    PYZBAR_AVAILABLE = False
 
 import db
 import styling
-import i18n
-from i18n import t
 
-# Camera barcode scanning needs pyzbar + the libzbar0 system library
-# (see requirements.txt / packages.txt). Imported defensively so the app
-# doesn't crash if those haven't been added yet — the manual/USB-scanner
-# path still works either way.
-try:
-    from pyzbar.pyzbar import decode as zbar_decode
-    from PIL import Image
-    CAMERA_SCAN_AVAILABLE = True
-except ImportError:
-    CAMERA_SCAN_AVAILABLE = False
+
+# ---------------------------------------------------------------------------
+# Camera barcode decoding
+# ---------------------------------------------------------------------------
+
+def _prep_variants(img: Image.Image):
+    """
+    Yield a handful of preprocessed versions of the captured photo to try
+    decoding against. Handles the two failure modes shopkeepers actually
+    hit: barcode too small/far (needs digital zoom via center-crop + upscale)
+    and barcode slightly out of focus/low contrast (needs sharpening and
+    contrast boost). No single version works for every photo, so we just
+    try several cheap, fast variants and stop at the first successful decode.
+    """
+    base = ImageOps.exif_transpose(img).convert("L")  # grayscale, fix orientation
+    w, h = base.size
+
+    # 1) Straight grayscale, as captured.
+    yield base
+
+    # 2) Contrast + sharpness boost — rescues slightly blurry/low-contrast shots.
+    enhanced = ImageEnhance.Contrast(base).enhance(1.8)
+    enhanced = ImageEnhance.Sharpness(enhanced).enhance(2.0)
+    yield enhanced
+
+    # 3) Simulated "zoom": center-crop progressively tighter and upscale back
+    #    up. Fixes the "scanned from far away, barcode too small" case without
+    #    needing any real optical/pinch zoom control on the camera widget.
+    for crop_fraction in (0.6, 0.4, 0.25):
+        cw, ch = int(w * crop_fraction), int(h * crop_fraction)
+        left, top = (w - cw) // 2, (h - ch) // 2
+        cropped = base.crop((left, top, left + cw, top + ch))
+        # Upscale back to a reasonable decode size.
+        scale = max(1, 900 // max(cropped.width, 1))
+        zoomed = cropped.resize((cropped.width * scale, cropped.height * scale), Image.LANCZOS)
+        zoomed = ImageEnhance.Contrast(zoomed).enhance(1.6)
+        zoomed = zoomed.filter(ImageFilter.SHARPEN)
+        yield zoomed
+
+
+def decode_barcode_from_photo(img: Image.Image):
+    """
+    Try to read a barcode from a captured photo. Returns the decoded string,
+    or None if nothing could be read after all preprocessing attempts.
+    """
+    if not PYZBAR_AVAILABLE:
+        return None
+    for variant in _prep_variants(img):
+        try:
+            results = _zbar_decode(variant)
+        except Exception:
+            results = []
+        if results:
+            return results[0].data.decode("utf-8", errors="ignore")
+    return None
 
 # ---------------------------------------------------------------------------
 # Page config + one-time setup
@@ -51,8 +104,6 @@ if "barcode_lookup" not in st.session_state:
     st.session_state.barcode_lookup = None
 if "auth_view" not in st.session_state:
     st.session_state.auth_view = "login"  # "login" | "signup" | "forgot"
-if "lang" not in st.session_state:
-    st.session_state.lang = "en"  # "en" | "gu"
 
 PALETTE = {
     "ink": "#0B3B2E",
@@ -121,37 +172,40 @@ def empty_state(icon: str, text: str):
 
 def _auth_hero():
     st.markdown(
-        f"""
+        """
         <div class="auth-hero">
             <div class="hero-orb hero-orb-1"></div>
             <div class="hero-orb hero-orb-2"></div>
             <div class="hero-topline">
                 <span class="hero-topline-dot"></span>
-                {t('hero_eyebrow')}
+                BUILT FOR SHOPS THAT MOVE FAST
             </div>
             <div class="hero-mark">🧾 SmartMart</div>
-            <div class="hero-headline">{t('hero_headline')}</div>
-            <div class="hero-sub">{t('hero_sub')}</div>
+            <div class="hero-headline">Run your shop<br/>like clockwork.</div>
+            <div class="hero-sub">
+                One dashboard for stock, sales, and barcodes —
+                built to feel as simple as writing it in a ledger.
+            </div>
             <div class="hero-grid">
                 <div class="hero-feature">
                     <div class="hero-feature-icon">📦</div>
-                    <div class="hero-feature-title">{t('feat_stock_title')}</div>
-                    <div class="hero-feature-desc">{t('feat_stock_desc')}</div>
+                    <div class="hero-feature-title">Live stock</div>
+                    <div class="hero-feature-desc">Know what's in and out, down to the unit.</div>
                 </div>
                 <div class="hero-feature">
                     <div class="hero-feature-icon">🔍</div>
-                    <div class="hero-feature-title">{t('feat_barcode_title')}</div>
-                    <div class="hero-feature-desc">{t('feat_barcode_desc')}</div>
+                    <div class="hero-feature-title">Barcode ready</div>
+                    <div class="hero-feature-desc">Scan to restock or add new items in seconds.</div>
                 </div>
                 <div class="hero-feature">
                     <div class="hero-feature-icon">📊</div>
-                    <div class="hero-feature-title">{t('feat_dash_title')}</div>
-                    <div class="hero-feature-desc">{t('feat_dash_desc')}</div>
+                    <div class="hero-feature-title">Clear dashboards</div>
+                    <div class="hero-feature-desc">See what's selling without digging for it.</div>
                 </div>
                 <div class="hero-feature">
                     <div class="hero-feature-icon">⬇</div>
-                    <div class="hero-feature-title">{t('feat_export_title')}</div>
-                    <div class="hero-feature-desc">{t('feat_export_desc')}</div>
+                    <div class="hero-feature-title">Export anytime</div>
+                    <div class="hero-feature-desc">A clean Excel report, whenever you need one.</div>
                 </div>
             </div>
             <div class="hero-receipt">
@@ -164,13 +218,10 @@ def _auth_hero():
 
 
 def auth_screen():
-    _, lang_col = st.columns([3, 1])
-    with lang_col:
-        i18n.render_lang_toggle(key_suffix="auth")
-
     left, mid, right = st.columns([1, 0.08, 1])
 
     with left:
+        st.write("")
         st.write("")
         _auth_hero()
 
@@ -179,15 +230,16 @@ def auth_screen():
             view = st.session_state.auth_view
 
             if view == "login":
-                st.markdown(f"### {t('welcome_back')}")
-                st.markdown(f'<div class="auth-sub">{t("login_sub")}</div>', unsafe_allow_html=True)
+                st.markdown("### Welcome back")
+                st.markdown('<div class="auth-sub">Log in to your shop dashboard.</div>',
+                            unsafe_allow_html=True)
                 with st.form("login_form"):
-                    u = st.text_input(t("username"))
-                    p = st.text_input(t("password"), type="password")
-                    submitted = st.form_submit_button(t("log_in"), type="primary", use_container_width=True)
+                    u = st.text_input("Username")
+                    p = st.text_input("Password", type="password")
+                    submitted = st.form_submit_button("Log in", type="primary", use_container_width=True)
                 if submitted:
                     if not u or not p:
-                        st.warning(t("fill_both_fields"))
+                        st.warning("Enter both a username and password.")
                     else:
                         user = db.verify_user(u.strip(), p)
                         if user:
@@ -199,38 +251,38 @@ def auth_screen():
                             }
                             st.rerun()
                         else:
-                            st.error(t("wrong_login"))
+                            st.error("Incorrect username or password.")
 
                 c1, c2 = st.columns(2)
                 with c1:
                     with st.container(key="link_forgot"):
-                        if st.button(t("forgot_password")):
+                        if st.button("Forgot password?"):
                             st.session_state.auth_view = "forgot"
                             st.rerun()
                 with c2:
                     with st.container(key="link_signup"):
-                        if st.button(t("create_account_link")):
+                        if st.button("Create an account →"):
                             st.session_state.auth_view = "signup"
                             st.rerun()
 
             elif view == "signup":
-                st.markdown(f"### {t('setup_shop')}")
-                st.markdown(f'<div class="auth-sub">{t("setup_sub")}</div>', unsafe_allow_html=True)
+                st.markdown("### Set up your shop")
+                st.markdown('<div class="auth-sub">Takes less than a minute.</div>',
+                            unsafe_allow_html=True)
                 with st.form("signup_form"):
-                    shop_name = st.text_input(t("shop_name"))
-                    owner_name = st.text_input(t("owner_name"))
-                    nu = st.text_input(t("username"))
-                    np1 = st.text_input(t("password"), type="password")
-                    np2 = st.text_input(t("confirm_password"), type="password")
-                    submitted2 = st.form_submit_button(t("create_account"), type="primary",
-                                                        use_container_width=True)
+                    shop_name = st.text_input("Shop name")
+                    owner_name = st.text_input("Shop owner name")
+                    nu = st.text_input("Username")
+                    np1 = st.text_input("Password", type="password")
+                    np2 = st.text_input("Confirm password", type="password")
+                    submitted2 = st.form_submit_button("Create account", type="primary", use_container_width=True)
                 if submitted2:
                     if not all([shop_name.strip(), owner_name.strip(), nu.strip(), np1]):
-                        st.warning(t("fill_all_fields"))
+                        st.warning("Fill in all fields.")
                     elif np1 != np2:
-                        st.error(t("passwords_no_match"))
+                        st.error("Passwords don't match.")
                     elif len(np1) < 4:
-                        st.error(t("password_too_short"))
+                        st.error("Password should be at least 4 characters.")
                     else:
                         ok, msg = db.create_user(nu.strip(), np1, shop_name, owner_name)
                         if ok:
@@ -241,34 +293,36 @@ def auth_screen():
                                 "shop_name": user.get("shop_name") or "",
                                 "owner_name": user.get("owner_name") or "",
                             }
-                            st.toast(t("welcome_toast", shop=shop_name.strip()), icon="🎉")
+                            st.toast(f"Welcome, {shop_name.strip()}! Your shop is set up.", icon="🎉")
                             st.rerun()
                         else:
                             st.error(msg)
 
                 with st.container(key="link_back_login"):
-                    if st.button(t("back_to_login")):
+                    if st.button("← Back to log in"):
                         st.session_state.auth_view = "login"
                         st.rerun()
 
             elif view == "forgot":
-                st.markdown(f"### {t('reset_password_title')}")
-                st.markdown(f'<div class="auth-sub">{t("reset_sub")}</div>', unsafe_allow_html=True)
+                st.markdown("### Reset your password")
+                st.markdown(
+                    '<div class="auth-sub">Enter your username and choose a new password.</div>',
+                    unsafe_allow_html=True,
+                )
                 with st.form("forgot_form"):
-                    fu = st.text_input(t("username"))
-                    fp1 = st.text_input(t("new_password"), type="password")
-                    fp2 = st.text_input(t("confirm_new_password"), type="password")
-                    submitted3 = st.form_submit_button(t("update_password"), type="primary",
-                                                        use_container_width=True)
+                    fu = st.text_input("Username")
+                    fp1 = st.text_input("New password", type="password")
+                    fp2 = st.text_input("Confirm new password", type="password")
+                    submitted3 = st.form_submit_button("Update password", type="primary", use_container_width=True)
                 if submitted3:
                     if not fu.strip() or not fp1:
-                        st.warning(t("fill_all_fields"))
+                        st.warning("Fill in all fields.")
                     elif fp1 != fp2:
-                        st.error(t("passwords_no_match"))
+                        st.error("Passwords don't match.")
                     elif len(fp1) < 4:
-                        st.error(t("password_too_short"))
+                        st.error("Password should be at least 4 characters.")
                     elif not db.user_exists(fu.strip()):
-                        st.error(t("no_account_found"))
+                        st.error("No account found with that username.")
                     else:
                         ok, msg = db.reset_password(fu.strip(), fp1)
                         if ok:
@@ -278,7 +332,7 @@ def auth_screen():
                             st.error(msg)
 
                 with st.container(key="link_back_login2"):
-                    if st.button(t("back_to_login")):
+                    if st.button("← Back to log in"):
                         st.session_state.auth_view = "login"
                         st.rerun()
 
@@ -288,7 +342,7 @@ def auth_screen():
 # ---------------------------------------------------------------------------
 
 def page_dashboard(user_id):
-    styling.brand_header(t("page_dashboard"))
+    styling.brand_header("Dashboard")
 
     products = db.get_products(user_id)
     sales = db.get_sales(user_id)
@@ -296,7 +350,7 @@ def page_dashboard(user_id):
     shop = st.session_state.user.get("shop_name") or ""
     owner = st.session_state.user.get("owner_name") or st.session_state.user["username"]
     hour = datetime.now().hour
-    greeting = t("good_morning") if hour < 12 else (t("good_afternoon") if hour < 18 else t("good_evening"))
+    greeting = "Good morning" if hour < 12 else ("Good afternoon" if hour < 18 else "Good evening")
     st.markdown(
         f"""
         <div class="welcome-hero">
@@ -304,7 +358,7 @@ def page_dashboard(user_id):
                 <div class="welcome-eyebrow">{greeting.upper()}</div>
                 <div class="welcome-title">{owner.split()[0] if owner else 'there'} 👋
                     {f'<span class="welcome-shop">— {shop}</span>' if shop else ''}</div>
-                <div class="welcome-sub">{t('welcome_sub')}</div>
+                <div class="welcome-sub">Here's how your shop is doing today.</div>
             </div>
         </div>
         """,
@@ -323,10 +377,10 @@ def page_dashboard(user_id):
     with st.container(key="kpi_row"):
         cols = st.columns(4)
         kpis = [
-            (t("kpi_products"), f"{total_products}", t("kpi_products_sub"), "📦"),
-            (t("kpi_stock_value"), f"₹{stock_value:,.0f}", t("kpi_stock_value_sub"), "💰"),
-            (t("kpi_sales_today"), f"₹{today_sales:,.0f}", today.strftime("%d %b %Y"), "🧾"),
-            (t("kpi_low_stock"), f"{low_stock_count}", t("kpi_low_stock_sub"), "⚠️"),
+            ("Products tracked", f"{total_products}", "across all categories", "📦"),
+            ("Stock value", f"₹{stock_value:,.0f}", "at current price × qty", "💰"),
+            ("Sales today", f"₹{today_sales:,.0f}", today.strftime("%d %b %Y"), "🧾"),
+            ("Low stock alerts", f"{low_stock_count}", "5 units or fewer", "⚠️"),
         ]
         for c, (label, value, sub, icon) in zip(cols, kpis):
             with c:
@@ -336,22 +390,22 @@ def page_dashboard(user_id):
 
     with c1:
         with panel("dash_top_sellers"):
-            st.markdown(f'<div class="panel-title">{t("top_selling")}</div>', unsafe_allow_html=True)
+            st.markdown('<div class="panel-title">Top-selling products</div>', unsafe_allow_html=True)
             if sales.empty:
-                empty_state("📉", t("no_sales_yet"))
+                empty_state("📉", "No sales recorded yet.")
             else:
                 top = sales.groupby("product_name")["quantity"].sum().sort_values(ascending=False).head(6)
                 fig, ax = plt.subplots(figsize=(5, 3.2))
                 ax.barh(top.index[::-1], top.values[::-1], color=PALETTE["ink"], height=0.55)
-                ax.set_xlabel(t("units_sold"))
+                ax.set_xlabel("Units sold")
                 chart_style(fig, ax)
                 st.pyplot(fig, use_container_width=True)
 
     with c2:
         with panel("dash_stock_category"):
-            st.markdown(f'<div class="panel-title">{t("stock_by_category")}</div>', unsafe_allow_html=True)
+            st.markdown('<div class="panel-title">Stock by category</div>', unsafe_allow_html=True)
             if products.empty:
-                empty_state("📦", t("no_products_yet"))
+                empty_state("📦", "No products yet.")
             else:
                 by_cat = products.groupby("category")["stock"].sum()
                 fig, ax = plt.subplots(figsize=(5, 3.2))
@@ -365,14 +419,11 @@ def page_dashboard(user_id):
                 st.pyplot(fig, use_container_width=True)
 
     with panel("dash_low_stock"):
-        st.markdown(f'<div class="panel-title">{t("low_stock_title")}</div>', unsafe_allow_html=True)
+        st.markdown('<div class="panel-title">Low stock — restock soon</div>', unsafe_allow_html=True)
         if products.empty or low_stock_count == 0:
-            empty_state("✅", t("well_stocked"))
+            empty_state("✅", "Everything is well stocked.")
         else:
-            low = products[products["stock"] <= 5][["name", "category", "stock", "barcode"]].rename(
-                columns={"name": t("col_name"), "category": t("col_category"),
-                         "stock": t("col_stock"), "barcode": t("col_barcode")}
-            )
+            low = products[products["stock"] <= 5][["name", "category", "stock", "barcode"]]
             st.dataframe(low, use_container_width=True, hide_index=True)
 
 
@@ -381,10 +432,10 @@ def page_dashboard(user_id):
 # ---------------------------------------------------------------------------
 
 def page_products(user_id):
-    styling.brand_header(t("page_products"))
+    styling.brand_header("Products")
 
     tab_manual, tab_bulk, tab_barcode, tab_list = st.tabs(
-        [t("tab_add_manually"), t("tab_bulk_upload"), t("tab_scan_barcode"), t("tab_all_products")]
+        ["➕ Add manually", "📄 Bulk upload", "🔍 Scan barcode", "📋 All products"]
     )
 
     with tab_manual:
@@ -392,21 +443,21 @@ def page_products(user_id):
             with st.form("add_product_form", clear_on_submit=True):
                 c1, c2 = st.columns(2)
                 with c1:
-                    name = st.text_input(t("product_name"))
-                    category = st.text_input(t("category"), value="General")
+                    name = st.text_input("Product name")
+                    category = st.text_input("Category", value="General")
                 with c2:
-                    price = st.number_input(t("price_rs"), min_value=0.0, step=1.0, format="%.2f")
-                    stock = st.number_input(t("opening_stock"), min_value=0, step=1)
-                barcode = st.text_input(t("barcode_optional"))
+                    price = st.number_input("Price (₹)", min_value=0.0, step=1.0, format="%.2f")
+                    stock = st.number_input("Opening stock", min_value=0, step=1)
+                barcode = st.text_input("Barcode (optional)")
                 image_url = st.text_input(
-                    t("photo_url_optional"),
+                    "Product photo URL (optional)",
                     placeholder="https://example.com/photo.jpg",
-                    help=t("photo_url_help"),
+                    help="Paste a direct link to an image. Leave blank to show a placeholder icon.",
                 )
-                submitted = st.form_submit_button(t("add_product"), type="primary")
+                submitted = st.form_submit_button("Add product", type="primary")
             if submitted:
                 if not name.strip():
-                    st.warning(t("name_required"))
+                    st.warning("Product name is required.")
                 else:
                     ok, msg = db.add_product(
                         user_id, name, category, price, stock, barcode or None, image_url or None
@@ -415,97 +466,111 @@ def page_products(user_id):
 
     with tab_bulk:
         with panel("prod_bulk"):
-            st.write(t("bulk_instructions"))
-            file = st.file_uploader(t("choose_file"), type=["csv", "xlsx", "xls"])
+            st.write("Upload a CSV or Excel file with columns: **name, category, price, stock, barcode, "
+                      "image_url** (barcode and image_url are optional; column names are matched "
+                      "case-insensitively).")
+            file = st.file_uploader("Choose file", type=["csv", "xlsx", "xls"])
             if file is not None:
                 try:
                     df = pd.read_csv(file) if file.name.endswith(".csv") else pd.read_excel(file)
                     st.dataframe(df.head(10), use_container_width=True, hide_index=True)
-                    if st.button(t("import_products"), type="primary"):
+                    if st.button("Import these products", type="primary"):
                         success, skipped, errors = db.bulk_upsert_products(user_id, df)
-                        st.success(t("imported_summary", success=success, skipped=skipped))
+                        st.success(f"Imported {success} product(s). Skipped {skipped}.")
                         if errors:
-                            with st.expander(t("see_skipped")):
+                            with st.expander("See skipped rows"):
                                 for e in errors:
                                     st.write("• " + e)
                 except Exception as e:
-                    st.error(t("file_read_error", error=e))
+                    st.error(f"Couldn't read that file: {e}")
 
     with tab_barcode:
         with panel("prod_barcode"):
-            if CAMERA_SCAN_AVAILABLE:
-                method = st.radio(
-                    t("scan_method_label"),
-                    [t("scan_method_manual"), t("scan_method_camera")],
-                    horizontal=True,
-                    label_visibility="collapsed",
+            scan_mode = st.radio(
+                "Scan method",
+                ["🔌 USB scanner / type", "📷 Camera scan"],
+                horizontal=True,
+                label_visibility="collapsed",
+            )
+
+            if scan_mode == "🔌 USB scanner / type":
+                st.write(
+                    "Plug in a USB barcode scanner — it types the code and presses Enter automatically. "
+                    "Click into the box below and scan an item."
                 )
-            else:
-                method = t("scan_method_manual")
-                st.info(t("camera_unavailable"))
-
-            scanned_code = None
-
-            if method == t("scan_method_camera"):
-                st.write(t("barcode_intro_camera"))
-                photo = st.camera_input(t("camera_capture_label"), label_visibility="collapsed")
-                if photo is not None:
-                    try:
-                        img = Image.open(photo)
-                        results = zbar_decode(img)
-                        if results:
-                            scanned_code = results[0].data.decode("utf-8")
-                            st.success(t("camera_detected", code=scanned_code))
-                        else:
-                            st.warning(t("camera_no_barcode"))
-                    except Exception as e:
-                        st.error(t("file_read_error", error=e))
-            else:
-                st.write(t("barcode_intro_manual"))
                 st.markdown('<div class="barcode-scan-box"></div>', unsafe_allow_html=True)
-                with st.form("barcode_form", clear_on_submit=True):
-                    typed = st.text_input(t("scan_or_type"), placeholder="e.g. 8901030826829")
-                    look_up = st.form_submit_button(t("look_up"), type="primary")
-                if look_up and typed.strip():
-                    scanned_code = typed.strip()
 
-            if scanned_code:
-                existing = db.get_product_by_barcode(user_id, scanned_code)
-                st.session_state.barcode_lookup = {"code": scanned_code, "product": existing}
+                with st.form("barcode_form", clear_on_submit=True):
+                    scanned = st.text_input("Scan or type barcode", placeholder="e.g. 8901030826829")
+                    look_up = st.form_submit_button("Look up", type="primary")
+
+                if look_up and scanned.strip():
+                    existing = db.get_product_by_barcode(user_id, scanned.strip())
+                    st.session_state.barcode_lookup = {"code": scanned.strip(), "product": existing}
+
+            else:  # Camera scan
+                if not PYZBAR_AVAILABLE:
+                    st.warning(
+                        "Camera scanning isn't available on this deployment yet "
+                        "(missing barcode-reading dependency). Use USB scanner / type instead, "
+                        "or ask your developer to redeploy with the camera-scan update."
+                    )
+                else:
+                    st.write(
+                        "Hold the barcode flat, well-lit, and about **15–20 cm** from the camera, "
+                        "then take the photo. No need to get it perfectly in focus — "
+                        "we automatically try a few zoomed-in crops after the photo is taken."
+                    )
+                    photo = st.camera_input("Scan a barcode", label_visibility="collapsed")
+
+                    if photo is not None:
+                        with st.spinner("Reading barcode…"):
+                            img = Image.open(photo)
+                            code = decode_barcode_from_photo(img)
+                        if code:
+                            st.success(f"Barcode read: **{code}**")
+                            existing = db.get_product_by_barcode(user_id, code)
+                            st.session_state.barcode_lookup = {"code": code, "product": existing}
+                        else:
+                            st.error(
+                                "Couldn't read a barcode from that photo. Try again — hold it a "
+                                "little steadier, make sure it's well lit, and keep the barcode "
+                                "flat and facing the camera (avoid glare and sharp angles)."
+                            )
 
             lookup = st.session_state.barcode_lookup
             if lookup:
                 code = lookup["code"]
                 product = lookup["product"]
                 if product:
-                    st.info(t("match_found", name=product["name"], category=product["category"],
-                              stock=product["stock"], price=f"{float(product['price']):.2f}"))
+                    st.info(f"Match found: **{product['name']}** ({product['category']}) — "
+                            f"current stock {product['stock']}, ₹{float(product['price']):.2f}")
                     with st.form("restock_form"):
-                        add_qty = st.number_input(t("add_to_stock"), min_value=1, step=1, value=10)
-                        do_restock = st.form_submit_button(t("restock"), type="primary")
+                        add_qty = st.number_input("Add to stock", min_value=1, step=1, value=10)
+                        do_restock = st.form_submit_button("Restock", type="primary")
                     if do_restock:
                         db.restock_product(product["id"], add_qty)
-                        st.success(t("stock_updated", name=product["name"],
-                                     total=product["stock"] + add_qty))
+                        st.success(f"Stock updated — {product['name']} now has "
+                                   f"{product['stock'] + add_qty} units.")
                         st.session_state.barcode_lookup = None
                         st.rerun()
                 else:
-                    st.warning(t("no_product_for_barcode", code=code))
+                    st.warning(f"No product found for barcode **{code}**. Add it as a new product:")
                     with st.form("new_from_barcode_form", clear_on_submit=True):
                         c1, c2 = st.columns(2)
                         with c1:
-                            n_name = st.text_input(t("product_name"))
-                            n_category = st.text_input(t("category"), value="General")
+                            n_name = st.text_input("Product name")
+                            n_category = st.text_input("Category", value="General")
                         with c2:
-                            n_price = st.number_input(t("price_rs"), min_value=0.0, step=1.0, format="%.2f")
-                            n_stock = st.number_input(t("opening_stock"), min_value=0, step=1, value=10)
+                            n_price = st.number_input("Price (₹)", min_value=0.0, step=1.0, format="%.2f")
+                            n_stock = st.number_input("Opening stock", min_value=0, step=1, value=10)
                         n_image_url = st.text_input(
-                            t("photo_url_optional"), placeholder="https://example.com/photo.jpg"
+                            "Product photo URL (optional)", placeholder="https://example.com/photo.jpg"
                         )
-                        create = st.form_submit_button(t("create_product"), type="primary")
+                        create = st.form_submit_button("Create product", type="primary")
                     if create:
                         if not n_name.strip():
-                            st.warning(t("name_required"))
+                            st.warning("Product name is required.")
                         else:
                             ok, msg = db.add_product(
                                 user_id, n_name, n_category, n_price, n_stock, code, n_image_url or None
@@ -521,34 +586,34 @@ def page_products(user_id):
         with panel("prod_list"):
             products = db.get_products(user_id)
             if products.empty:
-                empty_state("📋", t("no_products_add_one"))
+                empty_state("📋", "No products yet — add one from the tabs above.")
             else:
-                st.markdown(f'<div class="panel-title">{t("all_products_title")}</div>', unsafe_allow_html=True)
+                st.markdown('<div class="panel-title">All products</div>', unsafe_allow_html=True)
 
                 fc1, fc2 = st.columns([2, 1])
                 with fc1:
                     search = st.text_input(
-                        t("search_products"), placeholder=t("search_placeholder"),
+                        "Search products", placeholder="Search by name…",
                         label_visibility="collapsed", key="prod_search",
                     )
                 with fc2:
-                    categories = [t("all_categories")] + sorted(products["category"].dropna().unique().tolist())
+                    categories = ["All categories"] + sorted(products["category"].dropna().unique().tolist())
                     cat_filter = st.selectbox(
-                        t("category"), categories, label_visibility="collapsed", key="prod_cat_filter"
+                        "Category", categories, label_visibility="collapsed", key="prod_cat_filter"
                     )
 
                 filtered = products.copy()
                 if search.strip():
                     filtered = filtered[filtered["name"].str.contains(search.strip(), case=False, na=False)]
-                if cat_filter != t("all_categories"):
+                if cat_filter != "All categories":
                     filtered = filtered[filtered["category"] == cat_filter]
 
                 if filtered.empty:
-                    empty_state("🔍", t("no_search_match"))
+                    empty_state("🔍", "No products match your search.")
                 else:
                     st.markdown(
                         f'<div class="small-muted" style="margin:12px 0 4px 0;">'
-                        f'{t("product_count", n=len(filtered))}</div>',
+                        f'{len(filtered)} product{"s" if len(filtered) != 1 else ""}</div>',
                         unsafe_allow_html=True,
                     )
                     cols_per_row = 4
@@ -568,22 +633,22 @@ def page_products(user_id):
                                     ),
                                     unsafe_allow_html=True,
                                 )
-                                with st.expander(t("edit")):
+                                with st.expander("Edit"):
                                     new_stock = st.number_input(
-                                        t("stock"), min_value=0, step=1,
+                                        "Stock", min_value=0, step=1,
                                         value=int(prod["stock"]), key=f"stock_{prod['id']}",
                                     )
                                     new_image = st.text_input(
-                                        t("photo_url"), value=current_image or "",
+                                        "Photo URL", value=current_image or "",
                                         key=f"img_{prod['id']}", placeholder="https://…",
                                     )
-                                    if st.button(t("save"), key=f"save_{prod['id']}", type="primary",
+                                    if st.button("Save", key=f"save_{prod['id']}", type="primary",
                                                  use_container_width=True):
                                         if new_stock != int(prod["stock"]):
                                             db.update_stock(prod["id"], new_stock)
                                         if new_image != (current_image or ""):
                                             db.update_product_image(prod["id"], new_image)
-                                        st.success(t("product_updated", name=prod["name"]))
+                                        st.success(f"{prod['name']} updated.")
                                         st.rerun()
 
 
@@ -592,26 +657,26 @@ def page_products(user_id):
 # ---------------------------------------------------------------------------
 
 def page_sales(user_id):
-    styling.brand_header(t("page_sales"))
+    styling.brand_header("Sales")
 
     products = db.get_products(user_id)
     c1, c2 = st.columns([1.1, 1])
 
     with c1:
         with panel("sales_record"):
-            st.markdown(f'<div class="panel-title">{t("record_a_sale")}</div>', unsafe_allow_html=True)
+            st.markdown('<div class="panel-title">Record a sale</div>', unsafe_allow_html=True)
             if products.empty:
-                empty_state("📦", t("add_products_first"))
+                empty_state("📦", "Add products first.")
             else:
                 in_stock = products[products["stock"] > 0]
                 if in_stock.empty:
-                    st.warning(t("all_out_of_stock"))
+                    st.warning("Every product is out of stock — restock before recording sales.")
                 else:
                     options = {
                         f"{row['name']} — ₹{float(row['price']):.2f} ({row['stock']} left)": row["id"]
                         for _, row in in_stock.iterrows()
                     }
-                    choice = st.selectbox(t("product"), list(options.keys()))
+                    choice = st.selectbox("Product", list(options.keys()))
                     product_id = options[choice]
                     product_row = products[products["id"] == product_id].iloc[0]
                     st.markdown(
@@ -623,13 +688,13 @@ def page_sales(user_id):
                         unsafe_allow_html=True,
                     )
                     max_qty = int(product_row["stock"])
-                    qty = st.number_input(t("quantity"), min_value=1, max_value=max_qty, step=1)
+                    qty = st.number_input("Quantity", min_value=1, max_value=max_qty, step=1)
                     total = float(product_row["price"]) * qty
                     st.markdown(
                         f'<div class="sale-total">₹{total:,.2f}</div>',
                         unsafe_allow_html=True,
                     )
-                    if st.button(t("record_sale"), type="primary"):
+                    if st.button("Record sale", type="primary"):
                         ok, msg = db.record_sale(user_id, product_id, qty, float(product_row["price"]))
                         st.success(msg) if ok else st.error(msg)
                         if ok:
@@ -637,16 +702,15 @@ def page_sales(user_id):
 
     with c2:
         with panel("sales_recent"):
-            st.markdown(f'<div class="panel-title">{t("recent_sales")}</div>', unsafe_allow_html=True)
+            st.markdown('<div class="panel-title">Recent sales</div>', unsafe_allow_html=True)
             sales = db.get_sales(user_id)
             if sales.empty:
-                empty_state("🧾", t("no_sales_recorded"))
+                empty_state("🧾", "No sales recorded yet.")
             else:
-                display = sales[["product_name", "quantity", "total_price", "sold_at"]].head(15).rename(
-                    columns={"product_name": t("col_product"), "quantity": t("col_qty"),
-                             "total_price": t("col_total"), "sold_at": t("col_date")}
+                st.dataframe(
+                    sales[["product_name", "quantity", "total_price", "sold_at"]].head(15),
+                    use_container_width=True, hide_index=True,
                 )
-                st.dataframe(display, use_container_width=True, hide_index=True)
 
 
 # ---------------------------------------------------------------------------
@@ -681,18 +745,19 @@ def build_excel_report(products: pd.DataFrame, sales: pd.DataFrame) -> bytes:
 
 
 def page_reports(user_id):
-    styling.brand_header(t("page_reports"))
+    styling.brand_header("Reports")
     products = db.get_products(user_id)
     sales = db.get_sales(user_id)
 
     with panel("reports_export"):
-        st.write(t("reports_intro"))
+        st.write("Download a full Excel workbook with your current product catalogue and sales history "
+                  "— one sheet each, styled and ready to share.")
         if products.empty and sales.empty:
-            empty_state("📊", t("nothing_to_export"))
+            empty_state("📊", "Nothing to export yet.")
         else:
             data = build_excel_report(products, sales)
             st.download_button(
-                t("download_excel"),
+                "⬇ Download Excel report",
                 data=data,
                 file_name=f"smartmart_report_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -710,8 +775,6 @@ def main():
         return
 
     with st.sidebar:
-        i18n.render_lang_toggle(key_suffix="sidebar")
-
         st.markdown(
             '<div class="sidebar-brand">'
             '<div class="sidebar-brand-mark">🧾</div>'
@@ -725,17 +788,23 @@ def main():
             st.markdown(f'<div class="sidebar-shop">{shop}</div>'
                         f'<div class="sidebar-owner">{owner}</div>', unsafe_allow_html=True)
         else:
-            st.markdown(
-                f'<div class="sidebar-owner">{t("signed_in_as", name=st.session_state.user["username"])}</div>',
-                unsafe_allow_html=True,
-            )
+            st.markdown(f'<div class="sidebar-owner">Signed in as '
+                        f'{st.session_state.user["username"]}</div>', unsafe_allow_html=True)
         st.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
 
+        st.markdown(
+            '<a href="https://websiteforlook-sketch.github.io/-smartmart-landing/" '
+            'target="_blank" style="color:#E7C077;font-size:0.85rem;'
+            'text-decoration:none;">🌐 View landing page</a>',
+            unsafe_allow_html=True,
+        )
+        st.markdown('<div class="sidebar-spacer" style="margin-top:10px;"></div>', unsafe_allow_html=True)
+
         nav_map = {
-            f"🧭  {t('nav_dashboard')}": "Dashboard",
-            f"📦  {t('nav_products')}": "Products",
-            f"🧾  {t('nav_sales')}": "Sales",
-            f"📊  {t('nav_reports')}": "Reports",
+            "🧭  Dashboard": "Dashboard",
+            "📦  Products": "Products",
+            "🧾  Sales": "Sales",
+            "📊  Reports": "Reports",
         }
         nav_choice = st.radio(
             "Navigate",
@@ -745,7 +814,7 @@ def main():
         page = nav_map[nav_choice]
 
         st.markdown('<div class="sidebar-spacer"></div>', unsafe_allow_html=True)
-        if st.button(t("log_out"), use_container_width=True):
+        if st.button("↩ Log out", use_container_width=True):
             st.session_state.user = None
             st.session_state.barcode_lookup = None
             st.session_state.auth_view = "login"
