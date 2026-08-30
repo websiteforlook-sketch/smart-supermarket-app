@@ -39,7 +39,7 @@ import streamlit as st
 
 CSS = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&family=Parisienne&display=swap');
 
 :root {
     --ink: #0B3B2E;
@@ -351,100 +351,126 @@ div[class*="st-key-auth_wrap"] h3 { margin-bottom: 4px; font-size: 1.5rem; }
 .auth-sub { color: var(--muted); font-size: 0.94rem; margin-bottom: 28px; }
 
 .auth-hero {
-    background: linear-gradient(150deg, var(--ink-deep) 0%, var(--ink) 65%, var(--ink-light) 100%);
+    background:
+        linear-gradient(180deg, rgba(6,32,26,0.5) 0%, rgba(6,32,26,0.62) 45%, rgba(6,32,26,0.92) 100%),
+        url('https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=1600&q=70');
+    background-size: cover;
+    background-position: center;
     border-radius: 4px;
-    padding: 56px 46px;
+    padding: 44px 46px 32px 46px;
     height: 100%;
-    min-height: 600px;
+    min-height: 660px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-between;
     position: relative;
     overflow: hidden;
 }
-.hero-orb { position: absolute; border-radius: 50%; filter: blur(2px); opacity: 0.4; pointer-events: none; }
+.hero-orb { position: absolute; border-radius: 50%; filter: blur(2px); opacity: 0.35; pointer-events: none; }
 .hero-orb-1 { width: 260px; height: 260px; background: radial-gradient(circle, rgba(201,151,62,0.3) 0%, transparent 70%); top: -80px; right: -80px; }
 .hero-orb-2 { width: 300px; height: 300px; background: radial-gradient(circle, rgba(244,241,232,0.06) 0%, transparent 70%); bottom: -110px; left: -90px; }
+.hero-top {
+    display: flex; align-items: center; justify-content: space-between; position: relative; gap: 16px;
+}
 .hero-topline {
     display: flex; align-items: center; gap: 9px;
-    font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 600;
-    letter-spacing: 0.16em; color: var(--gold-bright); margin-bottom: 30px; position: relative;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; font-weight: 600;
+    letter-spacing: 0.16em; color: var(--gold-bright); position: relative;
 }
 .hero-topline-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); display: inline-block; }
 .hero-mark {
-    font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.5rem;
-    color: rgba(244,241,232,0.7); margin-bottom: 18px; position: relative;
+    font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.3rem;
+    color: rgba(244,241,232,0.85); position: relative;
+}
+.hero-mid { position: relative; margin: auto 0; padding: 28px 0; }
+.hero-script {
+    font-family: 'Parisienne', cursive; font-weight: 400;
+    font-size: clamp(1.9rem, 3.2vw, 2.5rem); line-height: 1;
+    color: var(--gold-bright); margin-bottom: 4px; position: relative;
 }
 .hero-headline {
-    font-family: 'Fraunces', serif; font-weight: 600; font-size: clamp(2.4rem, 4vw, 3.4rem);
-    line-height: 1.05; color: #F6F3EA; margin-bottom: 20px; position: relative; letter-spacing: -0.02em;
+    font-family: 'Fraunces', serif; font-weight: 700; font-size: clamp(2.1rem, 3.8vw, 3.1rem);
+    line-height: 1.08; color: #F6F3EA; margin-bottom: 20px; position: relative;
+    letter-spacing: 0.01em; text-transform: uppercase;
 }
 .hero-sub {
-    color: rgba(246,243,234,0.72); font-size: 1.04rem; line-height: 1.65;
-    max-width: 420px; margin-bottom: 40px; position: relative; font-weight: 300;
+    color: rgba(246,243,234,0.72); font-size: 1.02rem; line-height: 1.65;
+    max-width: 420px; margin-bottom: 34px; position: relative; font-weight: 300;
 }
-.hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; position: relative; margin-bottom: 34px; }
+.hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; position: relative; }
 .hero-feature {
-    background: rgba(244,241,232,0.04); border: 1px solid rgba(244,241,232,0.1);
+    background: rgba(15,26,22,0.38); border: 1px solid rgba(244,241,232,0.16);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     border-radius: 4px; padding: 18px 17px 16px 17px; transition: background 0.2s ease;
 }
-.hero-feature:hover { background: rgba(244,241,232,0.08); }
+.hero-feature:hover { background: rgba(15,26,22,0.55); }
 .hero-feature-icon { font-size: 1.3rem; margin-bottom: 10px; }
 .hero-feature-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 0.96rem; color: #F4F1E8; margin-bottom: 4px; }
-.hero-feature-desc { font-size: 0.79rem; line-height: 1.45; color: rgba(244,241,232,0.55); font-weight: 300; }
-.hero-receipt {
-    font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.05em;
-    color: rgba(244,241,232,0.4); border-top: 1px solid rgba(244,241,232,0.16); padding-top: 18px; position: relative;
+.hero-feature-desc { font-size: 0.79rem; line-height: 1.45; color: rgba(244,241,232,0.6); font-weight: 300; }
+.hero-bottom-bar {
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+    border-top: 1px solid rgba(244,241,232,0.22); padding-top: 18px; position: relative;
+}
+.hero-bottom-left {
+    font-size: 0.82rem; line-height: 1.5; color: rgba(244,241,232,0.65); max-width: 320px; font-weight: 300;
+}
+.hero-bottom-right {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.08em;
+    color: rgba(244,241,232,0.5); text-align: right; line-height: 1.7; white-space: nowrap;
 }
 
 /* ---------- Dashboard panoramic welcome hero ---------- */
 .welcome-hero {
     background:
-        radial-gradient(circle at 85% 10%, rgba(201,151,62,0.16) 0%, transparent 45%),
-        radial-gradient(circle at 10% 90%, rgba(20,84,63,0.5) 0%, transparent 50%),
-        linear-gradient(120deg, var(--ink-deep) 0%, var(--ink) 55%, var(--ink-light) 100%);
+        radial-gradient(circle at 85% 10%, rgba(201,151,62,0.14) 0%, transparent 45%),
+        linear-gradient(120deg, rgba(6,32,26,0.78) 0%, rgba(11,59,46,0.74) 55%, rgba(20,84,63,0.7) 100%),
+        url('https://images.unsplash.com/photo-1612819052787-618023ea329f?auto=format&fit=crop&w=1600&q=70');
+    background-size: cover;
+    background-position: center 40%;
     border-radius: 4px;
-    padding: 68px 56px;
+    padding: 64px 56px;
     margin-bottom: 40px;
     position: relative;
     overflow: hidden;
-    min-height: 220px;
+    min-height: 240px;
     display: flex;
     align-items: center;
 }
 .welcome-hero::after {
-    /* subtle grain/texture so the flat gradient doesn't feel like a plain color block */
+    /* subtle grain/texture so the photo doesn't feel flat under the overlay */
     content: "";
     position: absolute; inset: 0;
-    background-image: repeating-linear-gradient(120deg, rgba(255,255,255,0.015) 0 2px, transparent 2px 5px);
+    background-image: repeating-linear-gradient(120deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 5px);
     pointer-events: none;
 }
 .welcome-hero-text {
     position: relative;
     max-width: 600px;
 }
-.welcome-eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.22em;
+.welcome-script {
+    font-family: 'Parisienne', cursive;
+    font-weight: 400;
+    font-size: clamp(1.8rem, 2.8vw, 2.3rem);
+    line-height: 1;
     color: var(--gold-bright);
-    margin-bottom: 18px;
+    margin-bottom: 6px;
     position: relative;
 }
 .welcome-title {
     font-family: 'Fraunces', serif;
-    font-weight: 500;
-    font-size: clamp(2.2rem, 4vw, 3.2rem);
+    font-weight: 600;
+    font-size: clamp(2rem, 3.6vw, 2.9rem);
     color: #F8F5EC;
-    letter-spacing: -0.02em;
-    line-height: 1.08;
+    letter-spacing: 0.01em;
+    line-height: 1.15;
     position: relative;
+    text-transform: uppercase;
 }
 .welcome-shop {
     font-weight: 300;
+    text-transform: none;
     color: rgba(248,245,236,0.6);
-    font-size: 0.55em;
+    font-size: 0.5em;
     display: block;
     margin-top: 6px;
 }
