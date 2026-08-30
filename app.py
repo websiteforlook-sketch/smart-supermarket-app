@@ -1,11 +1,9 @@
 """
 app.py — Smart Supermarket Inventory & Sales Analytics System
 Streamlit + TiDB Cloud (MySQL-compatible) + Pandas/Matplotlib + OpenPyXL
-
 Group 47 — Dept. of Computer Engineering, R. C. Technical Institute, Ahmedabad
 Guide: Prof. Soniya Dadhania
 """
-
 import io
 from datetime import datetime
 
@@ -20,17 +18,16 @@ import db
 import styling
 import i18n
 
-
 # ---------------------------------------------------------------------------
 # Page config + one-time setup
 # ---------------------------------------------------------------------------
-
 st.set_page_config(
     page_title="SmartMart — Inventory & Sales",
     page_icon="🧾",
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
 styling.inject_css()
 db.init_tables()
 
@@ -42,9 +39,9 @@ if "lang" not in st.session_state:
     st.session_state.lang = "en"  # "en" | "gu" — see i18n.py
 
 PALETTE = {
-    "ink": "#0B3B2E",
-    "gold": "#C9973E",
-    "muted": "#6B7368",
+    "ink": "#143427",
+    "gold": "#E2623B",
+    "muted": "#62705F",
     "success": "#2E7D4F",
     "danger": "#B3432B",
 }
@@ -55,6 +52,7 @@ def panel(key: str):
     A real, properly-nested styled card — replaces the old '<div class="panel">
     ... </div>' markdown pattern, which rendered content as *siblings* of the
     div rather than children, leaving empty ghost boxes on the page.
+
     st.container(key=...) gives Streamlit a genuine wrapping element we can
     target with CSS (see styling.py, selector on [class*="st-key-panel_"]).
 
@@ -73,7 +71,7 @@ def chart_style(fig, ax):
     for spine in ["top", "right"]:
         ax.spines[spine].set_visible(False)
     for spine in ["left", "bottom"]:
-        ax.spines[spine].set_color("#E7E1D3")
+        ax.spines[spine].set_color("#E7DFC0")
     ax.tick_params(colors=PALETTE["muted"], labelsize=9)
     ax.title.set_color(PALETTE["ink"])
     ax.xaxis.label.set_color(PALETTE["muted"])
@@ -105,7 +103,6 @@ def empty_state(icon: str, text: str):
 # ---------------------------------------------------------------------------
 # Auth screens
 # ---------------------------------------------------------------------------
-
 def _auth_hero():
     st.markdown(
         f"""
@@ -160,16 +157,13 @@ def _auth_hero():
 
 def auth_screen():
     left, mid, right = st.columns([1, 0.08, 1])
-
     with left:
         st.write("")
         st.write("")
         _auth_hero()
-
     with right:
         with st.container(key="auth_wrap"):
             i18n.render_lang_toggle(key_suffix="auth")
-
             view = st.session_state.auth_view
 
             if view == "login":
@@ -180,6 +174,7 @@ def auth_screen():
                     u = st.text_input(i18n.t("username"))
                     p = st.text_input(i18n.t("password"), type="password")
                     submitted = st.form_submit_button(i18n.t("log_in"), type="primary", use_container_width=True)
+
                 if submitted:
                     if not u or not p:
                         st.warning(i18n.t("fill_both_fields"))
@@ -220,6 +215,7 @@ def auth_screen():
                     np2 = st.text_input(i18n.t("confirm_password"), type="password")
                     submitted2 = st.form_submit_button(i18n.t("create_account"), type="primary",
                                                         use_container_width=True)
+
                 if submitted2:
                     if not all([shop_name.strip(), owner_name.strip(), nu.strip(), np1]):
                         st.warning(i18n.t("fill_all_fields"))
@@ -259,6 +255,7 @@ def auth_screen():
                     fp2 = st.text_input(i18n.t("confirm_new_password"), type="password")
                     submitted3 = st.form_submit_button(i18n.t("update_password"), type="primary",
                                                          use_container_width=True)
+
                 if submitted3:
                     if not fu.strip() or not fp1:
                         st.warning(i18n.t("fill_all_fields"))
@@ -285,7 +282,6 @@ def auth_screen():
 # ---------------------------------------------------------------------------
 # Dashboard
 # ---------------------------------------------------------------------------
-
 def page_dashboard(user_id):
     styling.brand_header(i18n.t("page_dashboard"))
 
@@ -297,6 +293,7 @@ def page_dashboard(user_id):
     hour = datetime.now().hour
     greeting = i18n.t("good_morning") if hour < 12 else (
         i18n.t("good_afternoon") if hour < 17 else i18n.t("good_evening"))
+
     st.markdown(
         f"""
         <div class="welcome-hero">
@@ -314,6 +311,7 @@ def page_dashboard(user_id):
     total_products = len(products)
     stock_value = float((products["price"] * products["stock"]).sum()) if not products.empty else 0.0
     low_stock_count = int((products["stock"] <= 5).sum()) if not products.empty else 0
+
     today = datetime.now().date()
     today_sales = 0.0
     if not sales.empty:
@@ -333,7 +331,6 @@ def page_dashboard(user_id):
                 st.markdown(styling.kpi_card_html(label, value, sub, icon), unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
-
     with c1:
         with panel("dash_top_sellers"):
             st.markdown(f'<div class="panel-title">{i18n.t("top_selling")}</div>', unsafe_allow_html=True)
@@ -355,10 +352,10 @@ def page_dashboard(user_id):
             else:
                 by_cat = products.groupby("category")["stock"].sum()
                 fig, ax = plt.subplots(figsize=(5, 3.2))
-                colors = ["#0B3B2E", "#C9973E", "#6B7368", "#2E7D4F", "#B3432B", "#14543F"]
+                colors = ["#143427", "#E2623B", "#E7F17A", "#2E7D4F", "#B3432B", "#1E4A38"]
                 ax.pie(
                     by_cat.values, labels=by_cat.index, autopct="%1.0f%%",
-                    colors=colors[: len(by_cat)], textprops={"color": "#1F2A24", "fontsize": 9},
+                    colors=colors[: len(by_cat)], textprops={"color": "#16261F", "fontsize": 9},
                     wedgeprops={"edgecolor": "#FFFFFF", "linewidth": 2},
                 )
                 fig.patch.set_facecolor("#FFFFFF")
@@ -380,7 +377,6 @@ def page_dashboard(user_id):
 # ---------------------------------------------------------------------------
 # Products page (manual / bulk upload)
 # ---------------------------------------------------------------------------
-
 def page_products(user_id):
     styling.brand_header(i18n.t("page_products"))
 
@@ -405,6 +401,7 @@ def page_products(user_id):
                     help=i18n.t("photo_url_help"),
                 )
                 submitted = st.form_submit_button(i18n.t("add_product"), type="primary")
+
             if submitted:
                 if not name.strip():
                     st.warning(i18n.t("name_required"))
@@ -507,13 +504,12 @@ def page_products(user_id):
 # ---------------------------------------------------------------------------
 # Sales page
 # ---------------------------------------------------------------------------
-
 def page_sales(user_id):
     styling.brand_header(i18n.t("page_sales"))
 
     products = db.get_products(user_id)
-    c1, c2 = st.columns([1.1, 1])
 
+    c1, c2 = st.columns([1.1, 1])
     with c1:
         with panel("sales_record"):
             st.markdown(f'<div class="panel-title">{i18n.t("record_a_sale")}</div>', unsafe_allow_html=True)
@@ -531,6 +527,7 @@ def page_sales(user_id):
                     choice = st.selectbox(i18n.t("product"), list(options.keys()))
                     product_id = options[choice]
                     product_row = products[products["id"] == product_id].iloc[0]
+
                     st.markdown(
                         styling.product_mini_card_html(
                             name=product_row["name"],
@@ -539,6 +536,7 @@ def page_sales(user_id):
                         ),
                         unsafe_allow_html=True,
                     )
+
                     max_qty = int(product_row["stock"])
                     qty = st.number_input(i18n.t("quantity"), min_value=1, max_value=max_qty, step=1)
                     total = float(product_row["price"]) * qty
@@ -569,11 +567,10 @@ def page_sales(user_id):
 # ---------------------------------------------------------------------------
 # Reports page
 # ---------------------------------------------------------------------------
-
 def build_excel_report(products: pd.DataFrame, sales: pd.DataFrame) -> bytes:
     wb = Workbook()
-    header_fill = PatternFill(start_color="0B3B2E", end_color="0B3B2E", fill_type="solid")
-    header_font = Font(color="FAF7F0", bold=True)
+    header_fill = PatternFill(start_color="143427", end_color="143427", fill_type="solid")
+    header_font = Font(color="FBF6E6", bold=True)
 
     def write_sheet(ws, df, title):
         ws.title = title
@@ -599,6 +596,7 @@ def build_excel_report(products: pd.DataFrame, sales: pd.DataFrame) -> bytes:
 
 def page_reports(user_id):
     styling.brand_header(i18n.t("page_reports"))
+
     products = db.get_products(user_id)
     sales = db.get_sales(user_id)
 
@@ -620,7 +618,6 @@ def page_reports(user_id):
 # ---------------------------------------------------------------------------
 # Router
 # ---------------------------------------------------------------------------
-
 def main():
     if not st.session_state.user:
         auth_screen()
@@ -643,8 +640,8 @@ def main():
             st.markdown(f'<div class="sidebar-owner">'
                         f'{i18n.t("signed_in_as", name=st.session_state.user["username"])}</div>',
                         unsafe_allow_html=True)
-        st.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
 
+        st.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
         i18n.render_lang_toggle(key_suffix="sidebar")
         st.markdown('<div class="sidebar-spacer" style="margin-top:6px;"></div>', unsafe_allow_html=True)
 
