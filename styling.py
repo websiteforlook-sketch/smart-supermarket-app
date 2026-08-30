@@ -260,8 +260,7 @@ div[class*="st-key-kpi_row"] { margin-bottom: 12px; }
 .kpi-card .kpi-sub { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
 
 /* ---------- Generic content panels ---------- */
-div[class*="st-key-panel_"],
-div[class*="st-key-auth_wrap"] {
+div[class*="st-key-panel_"] {
     background: var(--card);
     border: 2px solid var(--forest);
     border-radius: 30px 30px 12px 12px;
@@ -361,104 +360,125 @@ div[class*="st-key-link_"] .stButton > button:hover { background: transparent !i
     height: 3px; border-radius: 2px; margin: 10px 0 22px 0; opacity: 0.4;
 }
 
-/* ---------- Auth screen — flat bold hero, no photo ---------- */
-@keyframes authRise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+/* ---------- Auth screen v2 — full-bleed landing page, nothing boxed ---------- */
+@keyframes authRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes authFade { from { opacity: 0; } to { opacity: 1; } }
 
-div[class*="st-key-auth_wrap"] {
-    max-width: 440px; margin: 20px auto 0 auto;
-    border-radius: 30px 30px 12px 12px; padding: 46px 40px 34px 40px;
-    box-shadow: 6px 6px 0 rgba(20,52,39,0.1);
-    animation: authRise 0.5s ease-out;
-    background: var(--card);
-    border: 2px solid var(--forest);
-}
-div[class*="st-key-auth_wrap"] h3 {
-    margin-bottom: 4px; font-size: 1.7rem;
-    font-family: 'Lilita One', cursive !important;
-    text-transform: uppercase;
-    letter-spacing: 0.01em;
-    font-weight: 400 !important;
-}
-.auth-sub { color: var(--muted); font-size: 0.94rem; margin-bottom: 28px; }
-
+/* Full-bleed hero band: escapes Streamlit's centered block-container so the
+   color runs edge-to-edge like a real landing page section, not a card. */
 .auth-hero {
     background: var(--lime);
-    border: 2px solid var(--forest);
-    border-radius: 30px 30px 12px 12px;
-    padding: 44px 46px 32px 46px;
-    height: 100%;
-    min-height: 660px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    width: 100vw;
     position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    margin-top: -2.6rem;
+    margin-bottom: 64px;
+    padding: 56px calc(50% - 470px) 64px calc(50% - 470px);
     overflow: hidden;
+    animation: authFade 0.6s ease-out;
+}
+@media (max-width: 1040px) {
+    .auth-hero { padding-left: 40px; padding-right: 40px; }
 }
 .hero-orb {
-    position: absolute; border-radius: 50%; pointer-events: none;
+    position: absolute; pointer-events: none;
 }
 .hero-orb-1 {
-    width: 220px; height: 220px; background: var(--orange); opacity: 0.9;
-    top: -90px; right: -90px;
+    width: 230px; height: 230px; background: var(--orange); opacity: 0.9;
+    top: -70px; right: 8%;
     clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
 }
 .hero-orb-2 {
-    width: 240px; height: 240px; border-radius: 40% 60% 55% 45% / 55% 40% 60% 45%;
-    background: var(--forest); opacity: 0.9;
-    bottom: -100px; left: -90px;
+    width: 200px; height: 200px; border-radius: 42% 58% 55% 45% / 55% 40% 60% 45%;
+    background: var(--forest); opacity: 0.14;
+    bottom: -70px; left: 4%;
 }
 .hero-top {
-    display: flex; align-items: center; justify-content: space-between; position: relative; gap: 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: relative; gap: 16px; max-width: 940px; margin: 0 auto 40px auto;
 }
 .hero-topline {
     display: flex; align-items: center; gap: 9px;
     font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; font-weight: 800;
     letter-spacing: 0.16em; color: var(--forest); position: relative;
-    background: var(--cream); border: 1.5px dashed var(--forest);
-    padding: 6px 14px; border-radius: 999px;
+    background: var(--cream); padding: 7px 16px; border-radius: 999px;
+    box-shadow: 0 6px 16px rgba(20,52,39,0.1);
 }
 .hero-topline-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); display: inline-block; }
 .hero-mark {
     font-family: 'Lilita One', cursive; font-weight: 400; font-size: 1.5rem;
     color: var(--forest); position: relative; text-transform: uppercase;
 }
-.hero-mid { position: relative; margin: auto 0; padding: 28px 0; }
+.hero-mid {
+    position: relative; max-width: 940px; margin: 0 auto; text-align: center;
+}
 .hero-script {
     font-family: 'Fraunces', serif; font-style: italic; font-weight: 500;
     font-size: clamp(1.5rem, 2.6vw, 1.9rem); line-height: 1;
-    color: var(--forest); margin-bottom: 6px; position: relative; opacity: 0.75;
+    color: var(--forest); margin-bottom: 6px; position: relative; opacity: 0.72;
 }
 .hero-headline {
-    font-family: 'Lilita One', cursive; font-weight: 400; font-size: clamp(2.6rem, 4.6vw, 4rem);
-    line-height: 0.98; color: var(--forest); margin-bottom: 20px; position: relative;
+    font-family: 'Lilita One', cursive; font-weight: 400; font-size: clamp(3rem, 6.5vw, 5.4rem);
+    line-height: 0.96; color: var(--forest); margin-bottom: 22px; position: relative;
     letter-spacing: 0.005em; text-transform: uppercase;
-    -webkit-text-stroke: 0.5px var(--forest);
 }
 .hero-sub {
-    color: var(--forest); opacity: 0.78; font-size: 1.02rem; line-height: 1.6;
-    max-width: 420px; margin-bottom: 34px; position: relative; font-weight: 500;
+    color: var(--forest); opacity: 0.78; font-size: 1.08rem; line-height: 1.6;
+    max-width: 520px; margin: 0 auto 40px auto; position: relative; font-weight: 500;
 }
-.hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; position: relative; }
+.hero-grid {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 0;
+    position: relative; max-width: 900px; margin: 0 auto;
+}
 .hero-feature {
-    background: var(--cream); border: 2px solid var(--forest);
-    border-radius: 20px 20px 8px 8px; padding: 18px 17px 16px 17px;
-    transition: transform 0.15s ease; box-shadow: 3px 3px 0 rgba(20,52,39,0.14);
+    background: transparent; border: none;
+    padding: 6px 30px; text-align: left;
+    border-left: 2px solid rgba(20,52,39,0.18);
+    flex: 1 1 190px;
 }
-.hero-feature:hover { transform: translateY(-3px); }
-.hero-feature-icon { font-size: 1.3rem; margin-bottom: 10px; }
-.hero-feature-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 0.96rem; color: var(--forest); margin-bottom: 4px; }
-.hero-feature-desc { font-size: 0.79rem; line-height: 1.45; color: var(--muted); font-weight: 500; }
-.hero-bottom-bar {
-    display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap;
-    border-top: 3px dashed var(--forest); padding-top: 18px; position: relative;
+.hero-feature:first-child { border-left: none; }
+.hero-feature-icon { font-size: 1.25rem; margin-bottom: 8px; }
+.hero-feature-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 0.94rem; color: var(--forest); margin-bottom: 4px; }
+.hero-feature-desc { font-size: 0.78rem; line-height: 1.45; color: var(--forest); opacity: 0.65; font-weight: 500; }
+.hero-bottom-bar { display: none; }
+
+/* Login form: no card, no border — just centered type on the page bg */
+div[class*="st-key-auth_wrap"] {
+    max-width: 420px; margin: 0 auto 40px auto;
+    padding: 0;
+    animation: authRise 0.5s ease-out;
+    background: transparent;
+    border: none;
+    box-shadow: none;
 }
-.hero-bottom-left {
-    font-size: 0.82rem; line-height: 1.5; color: var(--forest); opacity: 0.75; max-width: 320px; font-weight: 600;
+div[class*="st-key-auth_wrap"] h3 {
+    margin-bottom: 6px; font-size: 2rem;
+    font-family: 'Lilita One', cursive !important;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    font-weight: 400 !important;
+    text-align: center;
 }
-.hero-bottom-right {
-    font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.08em;
-    color: var(--forest); opacity: 0.65; text-align: right; line-height: 1.7; white-space: nowrap;
+.auth-sub {
+    color: var(--muted); font-size: 0.96rem; margin-bottom: 30px; text-align: center;
 }
+div[class*="st-key-auth_wrap"] div[data-testid="stForm"] {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 30px 28px;
+    box-shadow: 0 20px 50px rgba(20,52,39,0.1);
+    border-top: 4px solid var(--orange);
+}
+div[class*="st-key-auth_wrap"] div[data-testid="stRadio"] {
+    text-align: center; margin-bottom: 24px;
+}
+div[class*="st-key-auth_wrap"] div[data-testid="stRadio"] div[role="radiogroup"] {
+    display: inline-flex;
+}
+div[class*="st-key-auth_wrap"] .stColumns { margin-top: 18px; }
 
 /* ---------- Dashboard welcome hero — flat forest block ---------- */
 .welcome-hero {
