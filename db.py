@@ -15,6 +15,8 @@ import pandas as pd
 import certifi
 from datetime import datetime
 
+import product_images
+
 
 # ---------------------------------------------------------------------------
 # Connection
@@ -311,6 +313,13 @@ def bulk_upsert_products(user_id: int, df: pd.DataFrame) -> tuple[int, int, list
     Insert products from an uploaded CSV/Excel dataframe.
     Column names are normalized (case-insensitive) to:
     name, category, price, stock, barcode, image_url.
+
+    If a row doesn't supply its own image_url (no such column in the sheet,
+    or the cell is blank), a relevant photo is guessed automatically from
+    the product name/category via product_images.guess_image_url — so "Rice"
+    gets a rice photo, "Pen" gets a pen photo, etc., instead of the plain
+    placeholder box.
+
     Returns (success_count, skipped_count, error_messages).
     """
     col_map = {}
@@ -351,6 +360,14 @@ def bulk_upsert_products(user_id: int, df: pd.DataFrame) -> tuple[int, int, list
         barcode = str(barcode).strip() if barcode and str(barcode).lower() != "nan" else None
         image_url = row.get("image_url")
         image_url = str(image_url).strip() if image_url and str(image_url).lower() != "nan" else None
+
+        if not image_url:
+            # Sheet had no photo for this row — guess one from the name/category
+            # (e.g. "Basmati Rice" -> a rice photo) rather than leave it blank.
+            try:
+                image_url = product_images.guess_image_url(name, category)
+            except Exception:
+                image_url = None  # never let a photo lookup failure block the import
 
         try:
             cur.execute(
