@@ -30,6 +30,8 @@ TRANSLATIONS = {
 
     # ---- Auth: shared ----
     "hero_eyebrow": {"en": "BUILT FOR SHOPS THAT MOVE FAST", "gu": "ઝડપી દુકાનો માટે બનાવેલ"},
+    "hero_script": {"en": "Run your shop,", "gu": "તમારી દુકાન,"},
+    "hero_caps": {"en": "like clockwork.", "gu": "ઘડિયાળની જેમ ચલાવો."},
     "hero_headline": {"en": "Run your shop<br/>like clockwork.",
                        "gu": "તમારી દુકાન<br/>ઘડિયાળની જેમ ચલાવો."},
     "hero_sub": {"en": "One dashboard for stock, sales, and barcodes — "
