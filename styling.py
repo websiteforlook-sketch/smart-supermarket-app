@@ -289,23 +289,23 @@ div[class*="st-key-auth_wrap"] {
 
 /* ---------- Buttons ---------- */
 .stButton > button {
-    background: var(--ink);
-    color: #FAF7F0;
-    border: none;
+    background: var(--ink) !important;
+    color: #FAF7F0 !important;
+    border: none !important;
     border-radius: 4px;
     padding: 0.6rem 1.4rem;
     font-weight: 600;
     font-family: 'Inter', sans-serif;
     transition: all 0.15s ease;
 }
-.stButton > button:hover { background: var(--ink-light); color: #fff; }
-.stButton > button[kind="primary"] { background: var(--gold); color: var(--ink-deep); }
-.stButton > button[kind="primary"]:hover { background: var(--gold-bright); color: var(--ink-deep); }
+.stButton > button:hover { background: var(--ink-light) !important; color: #fff !important; }
+.stButton > button[kind="primary"] { background: var(--gold) !important; color: var(--ink-deep) !important; }
+.stButton > button[kind="primary"]:hover { background: var(--gold-bright) !important; color: var(--ink-deep) !important; }
 .stDownloadButton > button {
-    background: var(--gold); color: var(--ink-deep); border: none;
+    background: var(--gold) !important; color: var(--ink-deep) !important; border: none !important;
     border-radius: 4px; font-weight: 700; font-family: 'Inter', sans-serif;
 }
-.stDownloadButton > button:hover { background: var(--gold-bright); color: var(--ink-deep); }
+.stDownloadButton > button:hover { background: var(--gold-bright) !important; color: var(--ink-deep) !important; }
 
 div[class*="st-key-link_"] .stButton > button {
     background: transparent !important; color: var(--muted) !important;
