@@ -504,6 +504,18 @@ div[class*="st-key-auth_wrap"] h3 { margin-bottom: 4px; font-size: 1.5rem; }
 }
 .mini-name { font-family: 'Fraunces', serif; font-weight: 600; font-size: 0.95rem; color: var(--ink-text); }
 
+/* ---------- Language toggle (pill-style radio) ---------- */
+div[data-testid="stRadio"] div[role="radiogroup"] {
+    background: rgba(0,0,0,0.04);
+    border-radius: 20px;
+    padding: 3px;
+    display: inline-flex;
+    gap: 0;
+}
+section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] {
+    background: rgba(244,241,232,0.08);
+}
+
 /* ---------- Misc ---------- */
 hr { border-color: var(--line) !important; }
 .small-muted { color: var(--muted); font-size: 0.82rem; }
