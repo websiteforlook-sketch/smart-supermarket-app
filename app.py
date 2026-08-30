@@ -512,12 +512,17 @@ def page_products(user_id):
                     existing = db.get_product_by_barcode(user_id, scanned.strip())
                     st.session_state.barcode_lookup = {"code": scanned.strip(), "product": existing}
 
-            else:  # Camera scan
+            else:  # Photo from gallery
                 if not PYZBAR_AVAILABLE:
                     st.warning(i18n.t("camera_unavailable"))
                 else:
                     st.write(i18n.t("barcode_intro_camera"))
-                    photo = st.camera_input(i18n.t("camera_capture_label"), label_visibility="collapsed")
+                    photo = st.file_uploader(
+                        i18n.t("camera_capture_label"),
+                        type=["jpg", "jpeg", "png"],
+                        label_visibility="collapsed",
+                        key="barcode_gallery_upload",
+                    )
 
                     if photo is not None:
                         with st.spinner("…"):
