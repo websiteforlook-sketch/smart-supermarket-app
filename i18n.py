@@ -136,23 +136,23 @@ TRANSLATIONS = {
 
     "scan_method_label": {"en": "Scan method", "gu": "સ્કેન કરવાની રીત"},
     "scan_method_manual": {"en": "⌨️ USB scanner / type", "gu": "⌨️ USB સ્કેનર / ટાઈપ કરો"},
-    "scan_method_camera": {"en": "📷 Phone / webcam camera", "gu": "📷 ફોન / કેમેરા"},
+    "scan_method_camera": {"en": "🖼️ Photo from gallery", "gu": "🖼️ ગેલેરીમાંથી ફોટો"},
     "barcode_intro_manual": {"en": "Plug in a USB barcode scanner — it types the code and presses "
                                     "Enter automatically. Click into the box below and scan an item.",
                               "gu": "USB બારકોડ સ્કેનર જોડો — તે કોડ ટાઈપ કરીને આપોઆપ એન્ટર દબાવે છે. "
                                     "નીચેના બોક્સમાં ક્લિક કરી વસ્તુ સ્કેન કરો."},
-    "barcode_intro_camera": {"en": "Point your camera at the barcode and take a photo — it will be "
+    "barcode_intro_camera": {"en": "Choose a photo of the barcode from your gallery — it will be "
                                     "read automatically.",
-                              "gu": "તમારો કેમેરો બારકોડ તરફ રાખો અને ફોટો લો — તે આપોઆપ વંચાઈ જશે."},
-    "camera_capture_label": {"en": "Take a photo of the barcode", "gu": "બારકોડનો ફોટો લો"},
+                              "gu": "તમારી ગેલેરીમાંથી બારકોડનો ફોટો પસંદ કરો — તે આપોઆપ વંચાઈ જશે."},
+    "camera_capture_label": {"en": "Choose a photo of the barcode", "gu": "બારકોડનો ફોટો પસંદ કરો"},
     "camera_detected": {"en": "Barcode detected: **{code}**", "gu": "બારકોડ મળ્યો: **{code}**"},
-    "camera_no_barcode": {"en": "Couldn't find a barcode in that photo — try holding it closer "
-                                 "and steadier, with good light.",
-                           "gu": "ફોટામાં બારકોડ મળ્યો નથી — વધુ નજીક, સ્થિર અને સારા પ્રકાશમાં ફરી પ્રયત્ન કરો."},
-    "camera_unavailable": {"en": "Camera scanning isn't set up on this server yet — the `pyzbar` "
+    "camera_no_barcode": {"en": "Couldn't find a barcode in that photo — try a clearer, closer, "
+                                 "well-lit photo of the barcode.",
+                           "gu": "ફોટામાં બારકોડ મળ્યો નથી — વધુ સ્પષ્ટ, નજીકનો અને સારા પ્રકાશવાળો ફોટો પસંદ કરો."},
+    "camera_unavailable": {"en": "Photo-based scanning isn't set up on this server yet — the `pyzbar` "
                                   "package and `libzbar0` system library need to be added "
                                   "(see requirements.txt / packages.txt). Use USB scanner / type for now.",
-                            "gu": "આ સર્વર પર કેમેરા સ્કેનિંગ હજુ સેટ નથી થયું. હાલ પૂરતું USB સ્કેનર / "
+                            "gu": "આ સર્વર પર ફોટો સ્કેનિંગ હજુ સેટ નથી થયું. હાલ પૂરતું USB સ્કેનર / "
                                   "ટાઈપનો ઉપયોગ કરો."},
     "scan_or_type": {"en": "Scan or type barcode", "gu": "બારકોડ સ્કેન કરો અથવા ટાઈપ કરો"},
     "look_up": {"en": "Look up", "gu": "શોધો"},
