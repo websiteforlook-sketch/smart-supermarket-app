@@ -145,10 +145,6 @@ def _auth_hero():
                     </div>
                 </div>
             </div>
-            <div class="hero-bottom-bar">
-                <div class="hero-bottom-left">A student project, built for real shopkeepers.</div>
-                <div class="hero-bottom-right">GROUP 47<br/>R.C. TECHNICAL INSTITUTE, AHMEDABAD</div>
-            </div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -156,12 +152,20 @@ def _auth_hero():
 
 
 def auth_screen():
-    left, mid, right = st.columns([1, 0.08, 1])
-    with left:
-        st.write("")
-        st.write("")
-        _auth_hero()
-    with right:
+    # Full-bleed hero band up top, spanning the whole page — not a boxed panel.
+    _auth_hero()
+
+    st.markdown(
+        '<div style="text-align:center; margin-top:-24px;">'
+        '<span class="squiggle" style="display:inline-block;"></span>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
+    # Login form sits centered directly on the page below it, no card border
+    # around the whole thing — just the form itself gets a light lift.
+    left, mid, right = st.columns([1, 1.15, 1])
+    with mid:
         with st.container(key="auth_wrap"):
             i18n.render_lang_toggle(key_suffix="auth")
             view = st.session_state.auth_view
