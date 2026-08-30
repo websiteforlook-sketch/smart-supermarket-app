@@ -166,6 +166,26 @@ TRANSLATIONS = {
                                 "gu": "બારકોડ **{code}** માટે કોઈ ઉત્પાદન મળ્યું નથી. નવા ઉત્પાદન તરીકે ઉમેરો:"},
     "create_product": {"en": "Create product", "gu": "ઉત્પાદન બનાવો"},
 
+    "tab_add_by_photo": {"en": "🏷️ Add by photo", "gu": "🏷️ ફોટોથી ઉમેરો"},
+    "photo_scan_intro": {"en": "Upload a photo of the product. If the brand or product name is "
+                                "visible in the photo, we'll try to match it to an existing product "
+                                "automatically — otherwise we'll help you add it as new.",
+                          "gu": "ઉત્પાદનનો ફોટો અપલોડ કરો. જો ફોટામાં બ્રાન્ડ અથવા ઉત્પાદનનું નામ દેખાય "
+                                "છે, તો અમે તેને હાલના ઉત્પાદન સાથે આપોઆપ મેળવવાનો પ્રયત્ન કરીશું."},
+    "photo_scan_upload_label": {"en": "Choose a product photo", "gu": "ઉત્પાદનનો ફોટો પસંદ કરો"},
+    "ocr_unavailable": {"en": "Photo recognition isn't set up on this server yet — the `pytesseract` "
+                               "package and `tesseract-ocr` system dependency need to be added "
+                               "(see requirements.txt / packages.txt). Add products manually for now.",
+                         "gu": "આ સર્વર પર ફોટો ઓળખ હજુ સેટ નથી થઈ. હાલ પૂરતું ઉત્પાદન જાતે ઉમેરો."},
+    "photo_match_found": {"en": "Recognized: **{name}** ({category}) — current stock {stock}, ₹{price}",
+                           "gu": "ઓળખાયું: **{name}** ({category}) — હાલનો સ્ટોક {stock}, ₹{price}"},
+    "photo_no_match": {"en": "Couldn't confidently match this to an existing product. Check the "
+                              "name below and add it.",
+                        "gu": "આને હાલના ઉત્પાદન સાથે વિશ્વાસપૂર્વક મેળવી શકાયું નથી. નીચેનું નામ "
+                              "તપાસો અને ઉમેરો."},
+    "photo_detected_text": {"en": "Text we could read from the photo: \"{text}\"",
+                             "gu": "ફોટામાંથી વાંચી શકાયેલ લખાણ: \"{text}\""},
+
     "search_products": {"en": "Search products", "gu": "ઉત્પાદનો શોધો"},
     "search_placeholder": {"en": "Search by name…", "gu": "નામ પ્રમાણે શોધો…"},
     "all_categories": {"en": "All categories", "gu": "બધી શ્રેણીઓ"},
