@@ -1,9 +1,13 @@
 """
 app.py — Smart Supermarket Inventory & Sales Analytics System
 Streamlit + TiDB Cloud (MySQL-compatible) + Pandas/Matplotlib + OpenPyXL
+
+Group 47 — Dept. of Computer Engineering, R. C. Technical Institute, Ahmedabad
+Guide: Prof. Soniya Dadhania
 """
 
 import io
+import difflib
 from datetime import datetime
 
 import streamlit as st
@@ -23,9 +27,71 @@ except Exception:
     # gracefully to "not available" instead of crashing the whole app.
     PYZBAR_AVAILABLE = False
 
+try:
+    import pytesseract
+    PYTESSERACT_AVAILABLE = True
+except Exception:
+    # pytesseract needs the system binary tesseract-ocr (see packages.txt).
+    # If it's missing, product-photo recognition degrades gracefully instead
+    # of crashing the whole app.
+    PYTESSERACT_AVAILABLE = False
+
 import db
 import styling
 import i18n
+
+
+# ---------------------------------------------------------------------------
+# Product-photo recognition (OCR — reads brand/text on the product itself,
+# not a barcode). Free and fully offline: no external API, no per-product
+# reference photos needed. Works best when the product has clear printed
+# text; see match_product_by_text for how a loose OCR reading gets matched
+# against the shopkeeper's existing product names.
+# ---------------------------------------------------------------------------
+
+def extract_text_from_photo(img: Image.Image) -> str:
+    """Run OCR on a product photo and return cleaned-up extracted text."""
+    if not PYTESSERACT_AVAILABLE:
+        return ""
+    base = ImageOps.exif_transpose(img).convert("L")
+    base = ImageOps.autocontrast(base)
+    base = base.filter(ImageFilter.SHARPEN)
+    try:
+        raw = pytesseract.image_to_string(base)
+    except Exception:
+        raw = ""
+    return " ".join(raw.split())
+
+
+def match_product_by_text(text: str, products_df: pd.DataFrame):
+    """
+    Try to match OCR'd text against the shopkeeper's existing product names.
+    Returns the best-matching product row (pandas Series) or None if nothing
+    looks like a confident match. Two passes:
+      1) Direct substring — a product's full name, or its first word (often
+         the brand, e.g. "Hauser"), appears literally in the extracted text.
+         This is the strongest, most reliable signal.
+      2) Fuzzy fallback — closest overall text-similarity match, only
+         accepted above a reasonably high similarity threshold so a weak
+         guess doesn't silently restock the wrong product.
+    """
+    if products_df.empty or not text:
+        return None
+    text_upper = text.upper()
+    text_words = set(text_upper.split())
+
+    for _, row in products_df.iterrows():
+        name_upper = str(row["name"]).upper()
+        first_word = name_upper.split()[0] if name_upper.split() else ""
+        if name_upper in text_upper or (first_word and first_word in text_words):
+            return row
+
+    best_row, best_ratio = None, 0.0
+    for _, row in products_df.iterrows():
+        ratio = difflib.SequenceMatcher(None, str(row["name"]).upper(), text_upper).ratio()
+        if ratio > best_ratio:
+            best_ratio, best_row = ratio, row
+    return best_row if best_ratio >= 0.5 else None
 
 
 # ---------------------------------------------------------------------------
@@ -100,6 +166,8 @@ if "user" not in st.session_state:
     st.session_state.user = None
 if "barcode_lookup" not in st.session_state:
     st.session_state.barcode_lookup = None
+if "photo_scan_result" not in st.session_state:
+    st.session_state.photo_scan_result = None
 if "auth_view" not in st.session_state:
     st.session_state.auth_view = "login"  # "login" | "signup" | "forgot"
 if "lang" not in st.session_state:
@@ -442,9 +510,9 @@ def page_dashboard(user_id):
 def page_products(user_id):
     styling.brand_header(i18n.t("page_products"))
 
-    tab_manual, tab_bulk, tab_barcode, tab_list = st.tabs(
+    tab_manual, tab_bulk, tab_barcode, tab_photo, tab_list = st.tabs(
         [i18n.t("tab_add_manually"), i18n.t("tab_bulk_upload"),
-         i18n.t("tab_scan_barcode"), i18n.t("tab_all_products")]
+         i18n.t("tab_scan_barcode"), i18n.t("tab_add_by_photo"), i18n.t("tab_all_products")]
     )
 
     with tab_manual:
@@ -578,6 +646,77 @@ def page_products(user_id):
                             if ok:
                                 st.success(msg)
                                 st.session_state.barcode_lookup = None
+                                st.rerun()
+                            else:
+                                st.error(msg)
+
+    with tab_photo:
+        with panel("prod_photo"):
+            if not PYTESSERACT_AVAILABLE:
+                st.warning(i18n.t("ocr_unavailable"))
+            else:
+                st.write(i18n.t("photo_scan_intro"))
+                photo = st.file_uploader(
+                    i18n.t("photo_scan_upload_label"),
+                    type=["jpg", "jpeg", "png"],
+                    label_visibility="collapsed",
+                    key="product_photo_upload",
+                )
+                if photo is not None:
+                    with st.spinner("…"):
+                        img = Image.open(photo)
+                        extracted = extract_text_from_photo(img)
+                        products_now = db.get_products(user_id)
+                        match = match_product_by_text(extracted, products_now)
+                    st.session_state.photo_scan_result = {
+                        "extracted": extracted,
+                        "match": match.to_dict() if match is not None else None,
+                    }
+
+            result = st.session_state.photo_scan_result
+            if result:
+                match = result["match"]
+                extracted = result["extracted"]
+                if match:
+                    st.info(i18n.t(
+                        "photo_match_found", name=match["name"], category=match["category"],
+                        stock=match["stock"], price=f"{float(match['price']):.2f}",
+                    ))
+                    with st.form("photo_restock_form"):
+                        add_qty = st.number_input(i18n.t("add_to_stock"), min_value=1, step=1, value=10)
+                        do_restock = st.form_submit_button(i18n.t("restock"), type="primary")
+                    if do_restock:
+                        db.restock_product(match["id"], add_qty)
+                        st.success(i18n.t(
+                            "stock_updated", name=match["name"], total=match["stock"] + add_qty,
+                        ))
+                        st.session_state.photo_scan_result = None
+                        st.rerun()
+                else:
+                    st.warning(i18n.t("photo_no_match"))
+                    if extracted:
+                        st.caption(i18n.t("photo_detected_text", text=extracted[:120]))
+                    suggested_name = extracted.split()[0].title() if extracted else ""
+                    with st.form("new_from_photo_form", clear_on_submit=True):
+                        c1, c2 = st.columns(2)
+                        with c1:
+                            p_name = st.text_input(i18n.t("product_name"), value=suggested_name)
+                            p_category = st.text_input(i18n.t("category"), value="General")
+                        with c2:
+                            p_price = st.number_input(i18n.t("price_rs"), min_value=0.0, step=1.0, format="%.2f")
+                            p_stock = st.number_input(i18n.t("opening_stock"), min_value=0, step=1, value=10)
+                        p_barcode = st.text_input(i18n.t("barcode_optional"))
+                        create_p = st.form_submit_button(i18n.t("create_product"), type="primary")
+                    if create_p:
+                        if not p_name.strip():
+                            st.warning(i18n.t("name_required"))
+                        else:
+                            ok, msg = db.add_product(
+                                user_id, p_name, p_category, p_price, p_stock, p_barcode or None, None
+                            )
+                            if ok:
+                                st.success(msg)
+                                st.session_state.photo_scan_result = None
                                 st.rerun()
                             else:
                                 st.error(msg)
