@@ -37,9 +37,9 @@ from functools import lru_cache
 ICON_SVGS = {
     "rice": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#F2F6C9"/>
-<path d="M30 30 L70 30 L78 82 Q78 90 68 90 L32 90 Q22 90 22 82 Z" fill="#E9D9A8" stroke="#B98F4E" stroke-width="2"/>
-<path d="M34 30 Q50 12 66 30" fill="none" stroke="#B98F4E" stroke-width="4" stroke-linecap="round"/>
+<rect width="100" height="100" rx="18" fill="#FEF3D6"/>
+<path d="M30 30 L70 30 L78 82 Q78 90 68 90 L32 90 Q22 90 22 82 Z" fill="#E9D9A8" stroke="#312E81" stroke-width="2"/>
+<path d="M34 30 Q50 12 66 30" fill="none" stroke="#312E81" stroke-width="4" stroke-linecap="round"/>
 <circle cx="42" cy="52" r="3" fill="#FBF6E6"/>
 <circle cx="54" cy="58" r="3" fill="#FBF6E6"/>
 <circle cx="46" cy="68" r="3" fill="#FBF6E6"/>
@@ -48,20 +48,20 @@ ICON_SVGS = {
 
     "grain": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#F2F6C9"/>
-<rect x="26" y="34" width="48" height="52" rx="6" fill="#F1E9CC" stroke="#B98F4E" stroke-width="2"/>
+<rect width="100" height="100" rx="18" fill="#FEF3D6"/>
+<rect x="26" y="34" width="48" height="52" rx="6" fill="#F1E9CC" stroke="#312E81" stroke-width="2"/>
 <path d="M50 18 L54 30 L46 30 Z" fill="#E2623B"/>
-<path d="M42 30 Q50 20 58 30" fill="none" stroke="#B98F4E" stroke-width="3"/>
-<line x1="36" y1="50" x2="64" y2="50" stroke="#B98F4E" stroke-width="2"/>
-<line x1="36" y1="62" x2="64" y2="62" stroke="#B98F4E" stroke-width="2"/>
-<line x1="36" y1="74" x2="56" y2="74" stroke="#B98F4E" stroke-width="2"/>
+<path d="M42 30 Q50 20 58 30" fill="none" stroke="#312E81" stroke-width="3"/>
+<line x1="36" y1="50" x2="64" y2="50" stroke="#312E81" stroke-width="2"/>
+<line x1="36" y1="62" x2="64" y2="62" stroke="#312E81" stroke-width="2"/>
+<line x1="36" y1="74" x2="56" y2="74" stroke="#312E81" stroke-width="2"/>
 </svg>""",
 
     "sugar": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#F2F6C9"/>
-<path d="M32 28 L68 28 L74 88 L26 88 Z" fill="#FFFFFF" stroke="#143427" stroke-width="2"/>
-<path d="M40 28 L44 16 L56 16 L60 28" fill="none" stroke="#143427" stroke-width="2"/>
+<rect width="100" height="100" rx="18" fill="#FCE7F3"/>
+<path d="M32 28 L68 28 L74 88 L26 88 Z" fill="#FFFFFF" stroke="#312E81" stroke-width="2"/>
+<path d="M40 28 L44 16 L56 16 L60 28" fill="none" stroke="#312E81" stroke-width="2"/>
 <circle cx="42" cy="48" r="2.4" fill="#E2623B"/>
 <circle cx="52" cy="54" r="2.4" fill="#E2623B"/>
 <circle cx="60" cy="46" r="2.4" fill="#E2623B"/>
@@ -71,54 +71,54 @@ ICON_SVGS = {
 
     "salt": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#F2F6C9"/>
-<path d="M35 30 Q50 22 65 30 L68 82 Q68 90 58 90 L42 90 Q32 90 32 82 Z" fill="#DCEFFB" stroke="#1E4A38" stroke-width="2"/>
-<ellipse cx="50" cy="30" rx="15" ry="6" fill="#FFFFFF" stroke="#1E4A38" stroke-width="2"/>
-<circle cx="44" cy="55" r="2" fill="#1E4A38"/>
-<circle cx="52" cy="60" r="2" fill="#1E4A38"/>
-<circle cx="58" cy="52" r="2" fill="#1E4A38"/>
-<circle cx="47" cy="70" r="2" fill="#1E4A38"/>
+<rect width="100" height="100" rx="18" fill="#CFFAFE"/>
+<path d="M35 30 Q50 22 65 30 L68 82 Q68 90 58 90 L42 90 Q32 90 32 82 Z" fill="#DCEFFB" stroke="#312E81" stroke-width="2"/>
+<ellipse cx="50" cy="30" rx="15" ry="6" fill="#FFFFFF" stroke="#312E81" stroke-width="2"/>
+<circle cx="44" cy="55" r="2" fill="#312E81"/>
+<circle cx="52" cy="60" r="2" fill="#312E81"/>
+<circle cx="58" cy="52" r="2" fill="#312E81"/>
+<circle cx="47" cy="70" r="2" fill="#312E81"/>
 </svg>""",
 
     "bottle_oil": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#FBF6E6"/>
-<rect x="42" y="16" width="16" height="12" rx="2" fill="#B98F4E"/>
-<path d="M38 28 L62 28 L68 42 L68 84 Q68 90 60 90 L40 90 Q32 90 32 84 L32 42 Z" fill="#E2A93B" stroke="#B98F4E" stroke-width="2"/>
+<rect width="100" height="100" rx="18" fill="#FEF3D6"/>
+<rect x="42" y="16" width="16" height="12" rx="2" fill="#312E81"/>
+<path d="M38 28 L62 28 L68 42 L68 84 Q68 90 60 90 L40 90 Q32 90 32 84 L32 42 Z" fill="#E2A93B" stroke="#312E81" stroke-width="2"/>
 <rect x="38" y="52" width="24" height="20" rx="3" fill="#FBF6E6" opacity="0.85"/>
 </svg>""",
 
     "dairy": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#DCEFFB"/>
-<path d="M36 22 L64 22 L64 34 L74 46 L74 86 Q74 90 70 90 L30 90 Q26 90 26 86 L26 46 L36 34 Z" fill="#FFFFFF" stroke="#1E4A38" stroke-width="2"/>
+<rect width="100" height="100" rx="18" fill="#E0E7FF"/>
+<path d="M36 22 L64 22 L64 34 L74 46 L74 86 Q74 90 70 90 L30 90 Q26 90 26 86 L26 46 L36 34 Z" fill="#FFFFFF" stroke="#312E81" stroke-width="2"/>
 <rect x="26" y="52" width="48" height="14" fill="#2E7D4F"/>
-<line x1="36" y1="22" x2="36" y2="34" stroke="#1E4A38" stroke-width="2"/>
-<line x1="64" y1="22" x2="64" y2="34" stroke="#1E4A38" stroke-width="2"/>
+<line x1="36" y1="22" x2="36" y2="34" stroke="#312E81" stroke-width="2"/>
+<line x1="64" y1="22" x2="64" y2="34" stroke="#312E81" stroke-width="2"/>
 </svg>""",
 
     "hot_drink": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#F1E9CC"/>
-<path d="M30 40 L70 40 L66 82 Q65 88 58 88 L42 88 Q35 88 34 82 Z" fill="#8A5A34"/>
-<path d="M70 46 Q84 46 84 58 Q84 70 70 68" fill="none" stroke="#8A5A34" stroke-width="5"/>
-<path d="M40 30 Q44 24 40 18" fill="none" stroke="#B98F4E" stroke-width="3" stroke-linecap="round"/>
-<path d="M52 30 Q56 24 52 18" fill="none" stroke="#B98F4E" stroke-width="3" stroke-linecap="round"/>
-<path d="M64 30 Q68 24 64 18" fill="none" stroke="#B98F4E" stroke-width="3" stroke-linecap="round"/>
+<rect width="100" height="100" rx="18" fill="#FEF3D6"/>
+<path d="M30 40 L70 40 L66 82 Q65 88 58 88 L42 88 Q35 88 34 82 Z" fill="#312E81"/>
+<path d="M70 46 Q84 46 84 58 Q84 70 70 68" fill="none" stroke="#312E81" stroke-width="5"/>
+<path d="M40 30 Q44 24 40 18" fill="none" stroke="#312E81" stroke-width="3" stroke-linecap="round"/>
+<path d="M52 30 Q56 24 52 18" fill="none" stroke="#312E81" stroke-width="3" stroke-linecap="round"/>
+<path d="M64 30 Q68 24 64 18" fill="none" stroke="#312E81" stroke-width="3" stroke-linecap="round"/>
 </svg>""",
 
     "cold_drink": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#FBEFE7"/>
-<rect x="44" y="14" width="12" height="10" rx="2" fill="#143427"/>
-<path d="M38 24 L62 24 L66 36 L66 86 Q66 90 60 90 L40 90 Q34 90 34 86 L34 36 Z" fill="#E2623B" stroke="#B3432B" stroke-width="2"/>
+<rect width="100" height="100" rx="18" fill="#FCE7F3"/>
+<rect x="44" y="14" width="12" height="10" rx="2" fill="#312E81"/>
+<path d="M38 24 L62 24 L66 36 L66 86 Q66 90 60 90 L40 90 Q34 90 34 86 L34 36 Z" fill="#E2623B" stroke="#312E81" stroke-width="2"/>
 <rect x="38" y="50" width="24" height="30" rx="3" fill="#FBF6E6" opacity="0.9"/>
 </svg>""",
 
     "sweet_snack": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#F1E9CC"/>
-<circle cx="50" cy="52" r="30" fill="#C58A4E" stroke="#8A5A34" stroke-width="2"/>
+<rect width="100" height="100" rx="18" fill="#FEF3D6"/>
+<circle cx="50" cy="52" r="30" fill="#C58A4E" stroke="#312E81" stroke-width="2"/>
 <circle cx="40" cy="44" r="3.4" fill="#5A3A22"/>
 <circle cx="58" cy="42" r="3.4" fill="#5A3A22"/>
 <circle cx="50" cy="56" r="3.4" fill="#5A3A22"/>
@@ -128,101 +128,101 @@ ICON_SVGS = {
 
     "chips": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#FBEFE7"/>
-<path d="M30 24 L70 24 L64 90 L36 90 Z" fill="#E2623B" stroke="#B3432B" stroke-width="2"/>
-<path d="M38 24 L44 12 L56 12 L62 24" fill="none" stroke="#B3432B" stroke-width="2"/>
+<rect width="100" height="100" rx="18" fill="#FCE7F3"/>
+<path d="M30 24 L70 24 L64 90 L36 90 Z" fill="#E2623B" stroke="#312E81" stroke-width="2"/>
+<path d="M38 24 L44 12 L56 12 L62 24" fill="none" stroke="#312E81" stroke-width="2"/>
 <ellipse cx="50" cy="55" rx="14" ry="8" fill="#F3A583"/>
 </svg>""",
 
     "noodles": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#F1E9CC"/>
-<path d="M24 56 Q50 44 76 56 L70 84 Q50 92 30 84 Z" fill="#FFFFFF" stroke="#B98F4E" stroke-width="2"/>
+<rect width="100" height="100" rx="18" fill="#FEF3D6"/>
+<path d="M24 56 Q50 44 76 56 L70 84 Q50 92 30 84 Z" fill="#FFFFFF" stroke="#312E81" stroke-width="2"/>
 <path d="M32 58 Q40 48 48 58 Q56 68 64 58 Q70 50 76 58" fill="none" stroke="#E2A93B" stroke-width="3"/>
-<ellipse cx="50" cy="56" rx="26" ry="9" fill="#E9D9A8" stroke="#B98F4E" stroke-width="2"/>
+<ellipse cx="50" cy="56" rx="26" ry="9" fill="#E9D9A8" stroke="#312E81" stroke-width="2"/>
 </svg>""",
 
     "bread": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#F1E9CC"/>
-<path d="M24 70 L24 48 Q24 26 50 26 Q76 26 76 48 L76 70 Q76 80 66 80 L34 80 Q24 80 24 70 Z" fill="#E9C68C" stroke="#B98F4E" stroke-width="2"/>
-<path d="M36 34 Q40 46 36 58" fill="none" stroke="#B98F4E" stroke-width="2"/>
-<path d="M50 30 Q54 46 50 62" fill="none" stroke="#B98F4E" stroke-width="2"/>
-<path d="M64 34 Q68 46 64 58" fill="none" stroke="#B98F4E" stroke-width="2"/>
+<rect width="100" height="100" rx="18" fill="#FEF3D6"/>
+<path d="M24 70 L24 48 Q24 26 50 26 Q76 26 76 48 L76 70 Q76 80 66 80 L34 80 Q24 80 24 70 Z" fill="#E9C68C" stroke="#312E81" stroke-width="2"/>
+<path d="M36 34 Q40 46 36 58" fill="none" stroke="#312E81" stroke-width="2"/>
+<path d="M50 30 Q54 46 50 62" fill="none" stroke="#312E81" stroke-width="2"/>
+<path d="M64 34 Q68 46 64 58" fill="none" stroke="#312E81" stroke-width="2"/>
 </svg>""",
 
     "egg": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#F1E9CC"/>
-<rect x="24" y="52" width="52" height="30" rx="6" fill="#E9C68C" stroke="#B98F4E" stroke-width="2"/>
-<ellipse cx="50" cy="42" rx="17" ry="22" fill="#FFFFFF" stroke="#B98F4E" stroke-width="2"/>
+<rect width="100" height="100" rx="18" fill="#FEF3D6"/>
+<rect x="24" y="52" width="52" height="30" rx="6" fill="#E9C68C" stroke="#312E81" stroke-width="2"/>
+<ellipse cx="50" cy="42" rx="17" ry="22" fill="#FFFFFF" stroke="#312E81" stroke-width="2"/>
 <circle cx="50" cy="44" r="7" fill="#E2A93B"/>
 </svg>""",
 
     "vegetable": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#EAF3D8"/>
-<circle cx="42" cy="58" r="20" fill="#E2623B" stroke="#B3432B" stroke-width="2"/>
+<rect width="100" height="100" rx="18" fill="#DCFCE9"/>
+<circle cx="42" cy="58" r="20" fill="#E2623B" stroke="#312E81" stroke-width="2"/>
 <path d="M42 38 Q38 28 46 24 Q44 32 50 36" fill="#2E7D4F"/>
 <circle cx="68" cy="66" r="13" fill="#2E7D4F"/>
-<circle cx="68" cy="66" r="13" fill="none" stroke="#1E4A38" stroke-width="2"/>
+<circle cx="68" cy="66" r="13" fill="none" stroke="#312E81" stroke-width="2"/>
 </svg>""",
 
     "fruit": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#FBEFE7"/>
-<path d="M50 40 Q34 40 34 60 Q34 82 50 82 Q66 82 66 60 Q66 40 50 40 Z" fill="#E2623B" stroke="#B3432B" stroke-width="2"/>
-<path d="M50 40 Q48 30 52 24" fill="none" stroke="#8A5A34" stroke-width="3" stroke-linecap="round"/>
+<rect width="100" height="100" rx="18" fill="#FCE7F3"/>
+<path d="M50 40 Q34 40 34 60 Q34 82 50 82 Q66 82 66 60 Q66 40 50 40 Z" fill="#E2623B" stroke="#312E81" stroke-width="2"/>
+<path d="M50 40 Q48 30 52 24" fill="none" stroke="#312E81" stroke-width="3" stroke-linecap="round"/>
 <path d="M52 26 Q58 22 64 26" fill="#2E7D4F"/>
 </svg>""",
 
     "spice": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#FBEFE7"/>
-<path d="M28 56 Q50 40 72 56 L68 82 Q50 90 32 82 Z" fill="#E2623B" stroke="#B3432B" stroke-width="2"/>
+<rect width="100" height="100" rx="18" fill="#FCE7F3"/>
+<path d="M28 56 Q50 40 72 56 L68 82 Q50 90 32 82 Z" fill="#E2623B" stroke="#312E81" stroke-width="2"/>
 <ellipse cx="50" cy="56" rx="22" ry="9" fill="#F3A583"/>
 <path d="M44 24 Q50 34 56 24" fill="none" stroke="#2E7D4F" stroke-width="3" stroke-linecap="round"/>
 </svg>""",
 
     "personal_care": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#F8E7EE"/>
-<rect x="30" y="40" width="18" height="44" rx="6" fill="#F2B8D0" stroke="#B3432B" stroke-width="2"/>
-<rect x="35" y="30" width="8" height="12" rx="2" fill="#B3432B"/>
-<path d="M58 50 Q76 50 76 66 Q76 82 58 82 Q52 82 52 74 Q52 66 60 64 Q52 62 52 56 Q52 50 58 50 Z" fill="#FFFFFF" stroke="#B3432B" stroke-width="2"/>
+<rect width="100" height="100" rx="18" fill="#FCE7F3"/>
+<rect x="30" y="40" width="18" height="44" rx="6" fill="#F2B8D0" stroke="#312E81" stroke-width="2"/>
+<rect x="35" y="30" width="8" height="12" rx="2" fill="#312E81"/>
+<path d="M58 50 Q76 50 76 66 Q76 82 58 82 Q52 82 52 74 Q52 66 60 64 Q52 62 52 56 Q52 50 58 50 Z" fill="#FFFFFF" stroke="#312E81" stroke-width="2"/>
 </svg>""",
 
     "cleaning": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#DCEFFB"/>
-<rect x="38" y="40" width="24" height="46" rx="5" fill="#5FA8D3" stroke="#1E4A38" stroke-width="2"/>
-<rect x="44" y="26" width="12" height="16" rx="2" fill="#1E4A38"/>
-<path d="M56 30 L68 22" stroke="#1E4A38" stroke-width="3" stroke-linecap="round"/>
-<path d="M64 18 L72 26 M72 18 L64 26" stroke="#1E4A38" stroke-width="2"/>
+<rect width="100" height="100" rx="18" fill="#CFFAFE"/>
+<rect x="38" y="40" width="24" height="46" rx="5" fill="#5FA8D3" stroke="#312E81" stroke-width="2"/>
+<rect x="44" y="26" width="12" height="16" rx="2" fill="#312E81"/>
+<path d="M56 30 L68 22" stroke="#312E81" stroke-width="3" stroke-linecap="round"/>
+<path d="M64 18 L72 26 M72 18 L64 26" stroke="#312E81" stroke-width="2"/>
 </svg>""",
 
     "household": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#FBF6E6"/>
-<circle cx="50" cy="44" r="22" fill="#F3E38A" stroke="#B98F4E" stroke-width="2"/>
-<rect x="42" y="64" width="16" height="14" rx="3" fill="#B98F4E"/>
-<line x1="44" y1="82" x2="56" y2="82" stroke="#B98F4E" stroke-width="3" stroke-linecap="round"/>
-<path d="M42 44 Q50 54 58 44" fill="none" stroke="#B98F4E" stroke-width="2"/>
+<rect width="100" height="100" rx="18" fill="#F1EBFE"/>
+<circle cx="50" cy="44" r="22" fill="#F3E38A" stroke="#312E81" stroke-width="2"/>
+<rect x="42" y="64" width="16" height="14" rx="3" fill="#312E81"/>
+<line x1="44" y1="82" x2="56" y2="82" stroke="#312E81" stroke-width="3" stroke-linecap="round"/>
+<path d="M42 44 Q50 54 58 44" fill="none" stroke="#312E81" stroke-width="2"/>
 </svg>""",
 
     "pen": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#DCEFFB"/>
-<rect x="46" y="14" width="8" height="56" rx="3" transform="rotate(35 50 42)" fill="#1E4A38"/>
+<rect width="100" height="100" rx="18" fill="#E0E7FF"/>
+<rect x="46" y="14" width="8" height="56" rx="3" transform="rotate(35 50 42)" fill="#312E81"/>
 <path d="M62 62 L74 74 L66 80 L54 68 Z" fill="#5FA8D3" transform="rotate(35 50 42) translate(0,0)"/>
-<path d="M30 78 L40 84 L34 90 Z" fill="#143427"/>
+<path d="M30 78 L40 84 L34 90 Z" fill="#312E81"/>
 <rect x="20" y="70" width="26" height="10" rx="3" transform="rotate(35 50 42)" fill="#E2A93B"/>
 </svg>""",
 
     "notebook": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#F1E9CC"/>
-<rect x="28" y="20" width="46" height="60" rx="4" fill="#FFFFFF" stroke="#B98F4E" stroke-width="2"/>
+<rect width="100" height="100" rx="18" fill="#F1EBFE"/>
+<rect x="28" y="20" width="46" height="60" rx="4" fill="#FFFFFF" stroke="#312E81" stroke-width="2"/>
 <rect x="20" y="20" width="10" height="60" rx="4" fill="#E2623B"/>
 <circle cx="25" cy="30" r="2.4" fill="#FBF6E6"/>
 <circle cx="25" cy="42" r="2.4" fill="#FBF6E6"/>
@@ -235,21 +235,21 @@ ICON_SVGS = {
 
     "medicine": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#FBEFE7"/>
-<rect x="26" y="34" width="48" height="34" rx="6" fill="#FFFFFF" stroke="#B3432B" stroke-width="2"/>
+<rect width="100" height="100" rx="18" fill="#FCE7F3"/>
+<rect x="26" y="34" width="48" height="34" rx="6" fill="#FFFFFF" stroke="#312E81" stroke-width="2"/>
 <circle cx="38" cy="51" r="6" fill="#F3A583"/>
 <circle cx="50" cy="51" r="6" fill="#F3A583"/>
 <circle cx="62" cy="51" r="6" fill="#F3A583"/>
-<rect x="44" y="70" width="12" height="16" fill="#B3432B"/>
-<rect x="38" y="76" width="24" height="4" fill="#B3432B"/>
+<rect x="44" y="70" width="12" height="16" fill="#312E81"/>
+<rect x="38" y="76" width="24" height="4" fill="#312E81"/>
 </svg>""",
 
     "generic": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="18" fill="#F1E9CC"/>
-<path d="M50 22 L82 38 L82 68 L50 84 L18 68 L18 38 Z" fill="#E9C68C" stroke="#B98F4E" stroke-width="2"/>
-<path d="M18 38 L50 54 L82 38" fill="none" stroke="#B98F4E" stroke-width="2"/>
-<line x1="50" y1="54" x2="50" y2="84" stroke="#B98F4E" stroke-width="2"/>
+<rect width="100" height="100" rx="18" fill="#E0E7FF"/>
+<path d="M50 22 L82 38 L82 68 L50 84 L18 68 L18 38 Z" fill="#E9C68C" stroke="#312E81" stroke-width="2"/>
+<path d="M18 38 L50 54 L82 38" fill="none" stroke="#312E81" stroke-width="2"/>
+<line x1="50" y1="54" x2="50" y2="84" stroke="#312E81" stroke-width="2"/>
 </svg>""",
 }
 
