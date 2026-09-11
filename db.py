@@ -271,10 +271,18 @@ def add_product(user_id, name, category, price, stock, barcode=None, image_url=N
         barcode = barcode.strip() if barcode else None
         image_url = image_url.strip() if image_url else None
         if not image_url:
+            # Try a real photo from the web first; fall back to a bundled
+            # icon if that fails (no internet, no results, timeout, etc.)
+            # so adding a product is never blocked by an image lookup.
             try:
-                image_url = f"icon:{product_images.guess_image_tag(name, category)}"
+                image_url = product_images.fetch_web_photo(name, category)
             except Exception:
-                image_url = None  # never let an image lookup failure block adding the product
+                image_url = None
+            if not image_url:
+                try:
+                    image_url = f"icon:{product_images.guess_image_tag(name, category)}"
+                except Exception:
+                    image_url = None
         cur.execute(
             """INSERT INTO products (user_id, name, category, price, stock, barcode, image_url)
                VALUES (%s,%s,%s,%s,%s,%s,%s)""",
@@ -394,13 +402,18 @@ def bulk_upsert_products(user_id: int, df: pd.DataFrame) -> tuple[int, int, list
         image_url = str(image_url).strip() if image_url and str(image_url).lower() != "nan" else None
 
         if not image_url:
-            # Sheet had no photo for this row — guess a bundled illustration
-            # from the name/category (e.g. "Basmati Rice" -> a rice icon)
-            # rather than leave it blank.
+            # Sheet had no photo for this row — try a real photo from the
+            # web first, then fall back to a bundled icon so a lookup
+            # failure never blocks the import.
             try:
-                image_url = f"icon:{product_images.guess_image_tag(name, category)}"
+                image_url = product_images.fetch_web_photo(name, category)
             except Exception:
-                image_url = None  # never let a photo lookup failure block the import
+                image_url = None
+            if not image_url:
+                try:
+                    image_url = f"icon:{product_images.guess_image_tag(name, category)}"
+                except Exception:
+                    image_url = None
 
         try:
             cur.execute(
