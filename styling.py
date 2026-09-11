@@ -90,7 +90,13 @@ html, body, [class*="css"] {
     color: var(--ink);
 }
 .stApp {
-    background: linear-gradient(180deg, var(--bg) 0%, var(--bg) 100%);
+    background:
+        radial-gradient(circle at 6% 10%, rgba(99,102,241,0.10) 0%, transparent 32%),
+        radial-gradient(circle at 94% 16%, rgba(236,72,153,0.08) 0%, transparent 34%),
+        radial-gradient(circle at 12% 88%, rgba(139,92,246,0.07) 0%, transparent 36%),
+        radial-gradient(circle at 90% 85%, rgba(16,185,129,0.06) 0%, transparent 32%),
+        var(--bg);
+    background-attachment: fixed;
 }
 
 /* ---------- Top accent bar — static, colorful gradient ---------- */
@@ -197,19 +203,24 @@ section[data-testid="stSidebar"] .stRadio label:has(input:checked) p {
     font-weight: 700 !important;
 }
 section[data-testid="stSidebar"] .stButton > button {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 10px;
+    background: rgba(255,255,255,0.1) !important;
+    border: 1.5px solid rgba(255,255,255,0.28) !important;
+    border-radius: 10px !important;
     color: #fff !important;
     font-weight: 600;
     font-size: 0.86rem;
 }
 section[data-testid="stSidebar"] .stButton > button:hover {
-    background: linear-gradient(135deg, #EC4899, #F472B6);
-    border-color: transparent;
+    background: linear-gradient(135deg, #EC4899, #F472B6) !important;
+    border-color: transparent !important;
     color: #fff !important;
     transform: translateY(-1px);
     box-shadow: 0 6px 16px rgba(236,72,153,0.35);
+}
+section[data-testid="stSidebar"] .stButton > button p,
+section[data-testid="stSidebar"] .stButton > button span,
+section[data-testid="stSidebar"] .stButton > button div {
+    color: #fff !important;
 }
 .sidebar-link {
     display: inline-flex; align-items: center; gap: 6px;
@@ -251,13 +262,25 @@ div[class*="st-key-kpi_row"] { margin-bottom: 12px; border: none; }
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: 24px 22px;
+    padding: 22px 22px 24px 22px;
     position: relative;
     height: 100%;
+    overflow: hidden;
     box-shadow: 0 2px 10px rgba(99,102,241,0.06);
     transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
+.kpi-card::before {
+    content: "";
+    position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: var(--kpi-accent, var(--primary));
+}
 .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(99,102,241,0.14); }
+.kpi-icon {
+    width: 38px; height: 38px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem; margin-bottom: 14px;
+    background: var(--kpi-accent-soft, var(--primary-soft));
+}
 .kpi-card .kpi-label {
     font-family: 'Inter', sans-serif;
     font-size: 0.7rem;
@@ -650,9 +673,21 @@ def brand_header(subtitle: str):
     )
 
 
-def kpi_card_html(label: str, value: str, sub: str = "", icon: str = "") -> str:
+_KPI_ACCENTS = {
+    "primary": ("#6366F1", "#EEF0FE"),
+    "violet": ("#8B5CF6", "#F1EBFE"),
+    "success": ("#10B981", "#DCFCE9"),
+    "warning": ("#F59E0B", "#FEF3D6"),
+    "danger": ("#EF4444", "#FEE2E2"),
+}
+
+
+def kpi_card_html(label: str, value: str, sub: str = "", icon: str = "", accent: str = "primary") -> str:
+    color, soft = _KPI_ACCENTS.get(accent, _KPI_ACCENTS["primary"])
+    icon_html = f'<div class="kpi-icon">{icon}</div>' if icon else ""
     return f"""
-    <div class="kpi-card">
+    <div class="kpi-card" style="--kpi-accent:{color}; --kpi-accent-soft:{soft};">
+        {icon_html}
         <div class="kpi-label">{label}</div>
         <div class="kpi-value">{value}</div>
         <div class="kpi-sub">{sub}</div>
