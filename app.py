@@ -1,8 +1,6 @@
 """
 app.py — Smart Supermarket Inventory & Sales Analytics System
 Streamlit + TiDB Cloud (MySQL-compatible) + Pandas/Matplotlib + OpenPyXL
-Group 47 — Dept. of Computer Engineering, R. C. Technical Institute, Ahmedabad
-Guide: Prof. Soniya Dadhania
 """
 import io
 from datetime import datetime
@@ -492,6 +490,31 @@ def page_products(user_id):
             else:
                 st.markdown(f'<div class="panel-title">{i18n.t("all_products_title")}</div>',
                             unsafe_allow_html=True)
+
+                missing_images = products[
+                    products["image_url"].isna() | (products["image_url"].astype(str).str.strip() == "")
+                ]
+                if not missing_images.empty:
+                    mc1, mc2 = st.columns([3, 1])
+                    with mc1:
+                        st.markdown(
+                            f'<div class="small-muted" style="padding-top:8px;">'
+                            f'🖼️ {len(missing_images)} product(s) have no picture yet — added before '
+                            f'auto-matching was turned on.</div>',
+                            unsafe_allow_html=True,
+                        )
+                    with mc2:
+                        if st.button("Fill in missing images", key="backfill_images", use_container_width=True):
+                            filled = 0
+                            for _, row in missing_images.iterrows():
+                                try:
+                                    tag = product_images.guess_image_tag(row["name"], row["category"])
+                                    db.update_product_image(int(row["id"]), f"icon:{tag}")
+                                    filled += 1
+                                except Exception:
+                                    pass  # never let one bad row block the rest
+                            st.success(f"Added pictures to {filled} product(s).")
+                            st.rerun()
 
                 all_cats_label = i18n.t("all_categories")
                 fc1, fc2 = st.columns([2, 1])
