@@ -347,19 +347,19 @@ def page_dashboard(user_id):
     with st.container(key="kpi_row"):
         cols = st.columns(4)
         kpis = [
-            (i18n.t("kpi_products"), f"{total_products}", i18n.t("kpi_products_sub")),
-            (i18n.t("kpi_stock_value"), f"₹{stock_value:,.0f}", i18n.t("kpi_stock_value_sub")),
-            (i18n.t("kpi_sales_today"), f"₹{today_sales:,.0f}", today.strftime("%d %b %Y")),
-            (i18n.t("kpi_low_stock"), f"{low_stock_count}", i18n.t("kpi_low_stock_sub")),
+            (i18n.t("kpi_products"), f"{total_products}", i18n.t("kpi_products_sub"), "📦", "primary"),
+            (i18n.t("kpi_stock_value"), f"₹{stock_value:,.0f}", i18n.t("kpi_stock_value_sub"), "💰", "violet"),
+            (i18n.t("kpi_sales_today"), f"₹{today_sales:,.0f}", today.strftime("%d %b %Y"), "🛒", "success"),
+            (i18n.t("kpi_low_stock"), f"{low_stock_count}", i18n.t("kpi_low_stock_sub"), "⚠️", "warning"),
         ]
-        for c, (label, value, sub) in zip(cols, kpis):
+        for c, (label, value, sub, icon, accent) in zip(cols, kpis):
             with c:
-                st.markdown(styling.kpi_card_html(label, value, sub), unsafe_allow_html=True)
+                st.markdown(styling.kpi_card_html(label, value, sub, icon, accent), unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
     with c1:
         with panel("dash_top_sellers"):
-            st.markdown(f'<div class="panel-title">{i18n.t("top_selling")}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="panel-title">🏆 {i18n.t("top_selling")}</div>', unsafe_allow_html=True)
             if sales.empty:
                 empty_state("—", i18n.t("no_sales_yet"))
             else:
@@ -372,7 +372,7 @@ def page_dashboard(user_id):
 
     with c2:
         with panel("dash_stock_category"):
-            st.markdown(f'<div class="panel-title">{i18n.t("stock_by_category")}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="panel-title">📊 {i18n.t("stock_by_category")}</div>', unsafe_allow_html=True)
             if products.empty:
                 empty_state("—", i18n.t("no_products_yet"))
             else:
@@ -388,7 +388,7 @@ def page_dashboard(user_id):
                 st.pyplot(fig, use_container_width=True)
 
     with panel("dash_low_stock"):
-        st.markdown(f'<div class="panel-title">{i18n.t("low_stock_title")}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="panel-title">⚠️ {i18n.t("low_stock_title")}</div>', unsafe_allow_html=True)
         if products.empty or low_stock_count == 0:
             empty_state("—", i18n.t("well_stocked"))
         else:
@@ -572,7 +572,7 @@ def page_sales(user_id):
     c1, c2 = st.columns([1.1, 1])
     with c1:
         with panel("sales_record"):
-            st.markdown(f'<div class="panel-title">{i18n.t("record_a_sale")}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="panel-title">🛒 {i18n.t("record_a_sale")}</div>', unsafe_allow_html=True)
             if products.empty:
                 empty_state("—", i18n.t("add_products_first"))
             else:
@@ -612,7 +612,7 @@ def page_sales(user_id):
 
     with c2:
         with panel("sales_recent"):
-            st.markdown(f'<div class="panel-title">{i18n.t("recent_sales")}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="panel-title">🧾 {i18n.t("recent_sales")}</div>', unsafe_allow_html=True)
             sales = db.get_sales(user_id)
             if sales.empty:
                 empty_state("—", i18n.t("no_sales_recorded"))
