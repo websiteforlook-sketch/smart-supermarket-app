@@ -516,6 +516,43 @@ def page_products(user_id):
                             st.success(f"Added pictures to {filled} product(s).")
                             st.rerun()
 
+                icon_only = products[
+                    products["image_url"].apply(product_images.is_auto_icon)
+                ]
+                if not icon_only.empty:
+                    ic1, ic2 = st.columns([3, 1])
+                    with ic1:
+                        st.markdown(
+                            f'<div class="small-muted" style="padding-top:8px;">'
+                            f'📷 {len(icon_only)} product(s) are showing a drawn icon — '
+                            f'fetch a real photo for them from the web instead.</div>',
+                            unsafe_allow_html=True,
+                        )
+                    with ic2:
+                        if st.button("Get real photos", key="fetch_real_photos", use_container_width=True):
+                            updated, unchanged = 0, 0
+                            for _, row in icon_only.iterrows():
+                                try:
+                                    photo_url = product_images.fetch_web_photo(row["name"], row["category"])
+                                except Exception:
+                                    photo_url = None
+                                if photo_url:
+                                    db.update_product_image(int(row["id"]), photo_url)
+                                    updated += 1
+                                else:
+                                    unchanged += 1  # no match found — keeps its current icon
+                            if updated:
+                                st.success(
+                                    f"Found real photos for {updated} product(s)."
+                                    + (f" {unchanged} kept their icon (no match found)." if unchanged else "")
+                                )
+                            else:
+                                st.warning(
+                                    "Couldn't fetch any real photos — check that this app has "
+                                    "internet access, then try again."
+                                )
+                            st.rerun()
+
                 all_cats_label = i18n.t("all_categories")
                 fc1, fc2 = st.columns([2, 1])
                 with fc1:
