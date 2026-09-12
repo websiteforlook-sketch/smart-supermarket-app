@@ -345,6 +345,49 @@ def update_product_image(product_id: int, image_url: str):
 update_product_image = _with_retry(update_product_image)
 
 
+def reset_images_to_icons(product_ids: list[int]) -> int:
+    """
+    Force a batch of products back onto their auto-matched drawn icon,
+    overwriting whatever is currently in image_url (including a real web
+    photo that turned out to be wrong, e.g. an unrelated stock photo that
+    got saved before the photo-review gate existed, or a bad pick approved
+    by mistake). Re-derives the icon tag from each product's current
+    name/category rather than trusting any stale tag, so this is safe to
+    call on any product regardless of what's currently stored.
+
+    Returns the number of products actually updated.
+    """
+    if not product_ids:
+        return 0
+    conn, cur = _cursor()
+    updated = 0
+    try:
+        # Fetch current name/category for just these rows so the icon tag
+        # is guessed fresh (a product may have been renamed since it was
+        # first added).
+        placeholders = ",".join(["%s"] * len(product_ids))
+        cur.execute(
+            f"SELECT id, name, category FROM products WHERE id IN ({placeholders})",
+            tuple(product_ids),
+        )
+        rows = cur.fetchall()
+        for row in rows:
+            try:
+                tag = product_images.guess_image_tag(row["name"], row["category"])
+            except Exception:
+                tag = product_images.DEFAULT_TAG
+            cur.execute(
+                "UPDATE products SET image_url=%s WHERE id=%s",
+                (f"icon:{tag}", row["id"]),
+            )
+            updated += 1
+    finally:
+        cur.close()
+    get_products.clear()
+    return updated
+reset_images_to_icons = _with_retry(reset_images_to_icons)
+
+
 def bulk_upsert_products(user_id: int, df: pd.DataFrame) -> tuple[int, int, list]:
     """
     Insert products from an uploaded CSV/Excel dataframe.
