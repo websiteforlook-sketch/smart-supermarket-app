@@ -516,6 +516,32 @@ def page_products(user_id):
                             st.success(f"Added pictures to {filled} product(s).")
                             st.rerun()
 
+                # Products currently showing a REAL photo (a raw http(s) URL —
+                # either approved earlier through review, or left over from
+                # before the review gate existed). Openverse is a general
+                # openly-licensed media search, not a product-photo catalog,
+                # so these can be wrong (an old advertisement scan for "soap",
+                # a landscape for "sunflower oil", etc.) — give the shopkeeper
+                # a one-click way to undo all of them back to the safe drawn
+                # icons if that's happened.
+                live_photos = products[
+                    products["image_url"].apply(product_images.is_live_photo)
+                ]
+                if not live_photos.empty:
+                    lc1, lc2 = st.columns([3, 1])
+                    with lc1:
+                        st.markdown(
+                            f'<div class="small-muted" style="padding-top:8px;">'
+                            f'📸 {len(live_photos)} product(s) are showing a real web photo. '
+                            f'If any look wrong, you can undo them back to the safe drawn icon.</div>',
+                            unsafe_allow_html=True,
+                        )
+                    with lc2:
+                        if st.button("Reset all to icons", key="reset_all_live_photos", use_container_width=True):
+                            n = db.reset_images_to_icons(live_photos["id"].astype(int).tolist())
+                            st.success(f"Reset {n} product(s) back to their drawn icon.")
+                            st.rerun()
+
                 icon_only = products[
                     products["image_url"].apply(product_images.is_auto_icon)
                 ]
@@ -525,7 +551,7 @@ def page_products(user_id):
                         st.markdown(
                             f'<div class="small-muted" style="padding-top:8px;">'
                             f'📷 {len(icon_only)} product(s) are showing a drawn icon — '
-                            f'review real photo options for them.</div>',
+                            f'review real photo options for them, if you want to try.</div>',
                             unsafe_allow_html=True,
                         )
                     with ic2:
@@ -538,8 +564,10 @@ def page_products(user_id):
                     st.markdown("---")
                     st.markdown(
                         '<div class="panel-title">Pick a real photo</div>'
-                        '<div class="small-muted">Nothing changes until you tap a photo — '
-                        'skip any product where none of these look right.</div>',
+                        '<div class="small-muted">These come from a free, openly-licensed photo '
+                        'search — not a product catalog — so they can occasionally be irrelevant. '
+                        'Nothing changes until you tap a photo — skip any product where none of '
+                        'these look right.</div>',
                         unsafe_allow_html=True,
                     )
                     current_id = review_queue[0]
@@ -640,6 +668,14 @@ def page_products(user_id):
                                         i18n.t("photo_url"), value=edit_value,
                                         key=f"img_{prod['id']}", placeholder="https://…",
                                     )
+                                    if product_images.is_live_photo(raw_image):
+                                        if st.button(
+                                            "Reset to drawn icon", key=f"reset_{prod['id']}",
+                                            use_container_width=True,
+                                        ):
+                                            db.reset_images_to_icons([int(prod["id"])])
+                                            st.success(i18n.t("product_updated", name=prod['name']))
+                                            st.rerun()
                                     if st.button(i18n.t("save"), key=f"save_{prod['id']}", type="primary",
                                                  use_container_width=True):
                                         if new_stock != int(prod["stock"]):
