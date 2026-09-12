@@ -119,7 +119,19 @@ def fetch_web_photo(name: str, category: str = "") -> str | None:
     return candidates[0] if candidates else None
 
 # ---------------------------------------------------------------------------
-# Icon artwork — flat design + long shadow, 100x100 viewBox.
+# Icon artwork.
+#
+# Two visual families live in here side by side:
+#   - The original "flat design + long shadow" icons (100x100, rounded
+#     colored background square, drop-shadow triangle) — most tags below.
+#   - A newer "bold outline clip-art with a text label" style — currently
+#     just milk / bread / chips / yogurt, added on request to match a set
+#     of reference images. These have no background square (transparent),
+#     a thick dark outline, flatter color fills, and the product name
+#     baked in as bold text, the same way a shelf-label sticker would read.
+#     Feel free to redraw any of the older tags in this same style later —
+#     just replace the entry below and everything else (matching, storage,
+#     rendering) keeps working unchanged.
 # ---------------------------------------------------------------------------
 
 ICON_SVGS = {
@@ -210,6 +222,28 @@ ICON_SVGS = {
 </svg>
 """,
 
+    # ---- New "clip-art with label" style icons (milk / yogurt) ----
+
+    "milk": """
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<path d="M30 90 L70 90 L70 40 L60 26 L50 18 L40 26 L30 40 Z" fill="#5B9BD5" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
+<path d="M50 18 L60 26 L70 40 L70 90 L60 90 L60 26 Z" fill="#3E7CB8" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
+<rect x="38" y="48" width="24" height="26" rx="2" fill="#FFFFFF" stroke="#1F2937" stroke-width="2.5"/>
+<line x1="38" y1="61" x2="62" y2="61" stroke="#1F2937" stroke-width="2"/>
+<text x="50" y="59" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="800" fill="#1F2937" text-anchor="middle">MILK</text>
+</svg>
+""",
+
+    "yogurt": """
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<path d="M30 40 L34 84 Q34 90 42 90 L58 90 Q66 90 66 84 L70 40 Z" fill="#BFE8E8" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
+<ellipse cx="50" cy="40" rx="20" ry="7" fill="#DFF5F5" stroke="#1F2937" stroke-width="3"/>
+<path d="M62 34 Q70 34 70 40 Q70 46 62 44 Z" fill="#DFF5F5" stroke="#1F2937" stroke-width="2.5" stroke-linejoin="round"/>
+<rect x="32" y="52" width="36" height="16" fill="#EAF9F9" stroke="#1F2937" stroke-width="2"/>
+<text x="50" y="64" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="800" fill="#1F2937" text-anchor="middle">YOGURT</text>
+</svg>
+""",
+
     "hot_drink": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <rect width="100" height="100" rx="14" fill="#7C93C9"/>
@@ -253,17 +287,15 @@ ICON_SVGS = {
 </svg>
 """,
 
+    # ---- New "clip-art with label" style icon (chips) ----
+
     "chips": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="14" fill="#E8836E"/>
-
-<path d="M28,88 L72,88 L100,100 Z" fill="#000000" opacity="0.16"/>
-<path d="M30 34 L70 34 L64 88 L36 88Z" fill="#FB7185"/>
-<path d="M50 34 L70 34 L64 88 L50 88Z" fill="#DB2E5C"/>
-<path d="M30 34 L40 20 L50 34Z" fill="#DB2E5C"/>
-<path d="M50 34 L60 20 L70 34Z" fill="#FB7185"/>
-<ellipse cx="50" cy="58" rx="15" ry="9" fill="#FDE68A"/>
-
+<path d="M28 22 Q50 14 72 22 L78 30 Q82 55 76 80 Q74 90 62 90 L38 90 Q26 90 24 80 Q18 55 22 30 Z" fill="#9DB8D9" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
+<path d="M28 22 Q50 14 72 22 L74 28 Q50 20 26 28 Z" fill="#6E93C4" stroke="#1F2937" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M24 80 Q50 88 76 80 L74 86 Q50 92 26 86 Z" fill="#6E93C4" stroke="#1F2937" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="50" y="45" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="800" fill="#2C4A73" text-anchor="middle">CHIPS</text>
+<ellipse cx="50" cy="63" rx="14" ry="9" fill="#F4C15C" stroke="#1F2937" stroke-width="2"/>
 </svg>
 """,
 
@@ -281,17 +313,20 @@ ICON_SVGS = {
 </svg>
 """,
 
+    # ---- New "clip-art with label" style icon (bread) ----
+
     "bread": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" rx="14" fill="#3EB4C4"/>
-
-<path d="M22,82 L78,82 L100,100 Z" fill="#000000" opacity="0.16"/>
-<path d="M24 70 L24 48 Q24 26 50 26 Q76 26 76 48 L76 70 Q76 80 66 80 L34 80 Q24 80 24 70Z" fill="#EFCB93"/>
-<path d="M50 26 Q76 26 76 48 L76 70 Q76 80 66 80 L50 80Z" fill="#CE9D5A"/>
-<path d="M36 34 Q40 46 36 58" fill="none" stroke="#A67840" stroke-width="2"/>
-<path d="M50 30 Q54 46 50 62" fill="none" stroke="#A67840" stroke-width="2"/>
-<path d="M64 34 Q68 46 64 58" fill="none" stroke="#A67840" stroke-width="2"/>
-
+<g transform="rotate(-20 50 50)">
+<rect x="18" y="55" width="64" height="30" rx="6" fill="#4FC3E0" stroke="#1F2937" stroke-width="3"/>
+<path d="M30 55 Q50 30 70 55 Z" fill="#C88A4E" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
+<path d="M70 55 L82 40 L82 55 L76 62 Z" fill="#4FC3E0" stroke="#1F2937" stroke-width="2.5" stroke-linejoin="round"/>
+<line x1="36" y1="42" x2="40" y2="54" stroke="#A8703C" stroke-width="2"/>
+<line x1="46" y1="34" x2="48" y2="54" stroke="#A8703C" stroke-width="2"/>
+<line x1="56" y1="34" x2="54" y2="54" stroke="#A8703C" stroke-width="2"/>
+<line x1="64" y1="42" x2="60" y2="54" stroke="#A8703C" stroke-width="2"/>
+<text x="50" y="75" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="800" fill="#FFFFFF" text-anchor="middle">BREAD</text>
+</g>
 </svg>
 """,
 
@@ -436,7 +471,6 @@ ICON_SVGS = {
 <path d="M50 22 L82 38 L82 68 L50 84 L18 68 L18 38Z" fill="#A5B4FC"/>
 <path d="M50 54 L82 38 L82 68 L50 84Z" fill="#6366F1" opacity="0.55"/>
 <path d="M18 38 L50 54 L82 38" fill="none" stroke="#FFFFFF" stroke-width="2" opacity="0.4"/>
-
 </svg>
 """,
 }
@@ -455,7 +489,8 @@ _KEYWORD_TAGS = [
     ("sugar", "sugar"),
     ("salt", "salt"),
     ("ghee", "bottle_oil"), ("oil", "bottle_oil"),
-    ("milk", "dairy"), ("curd", "dairy"), ("yogurt", "dairy"),
+    ("milk", "milk"),
+    ("curd", "yogurt"), ("yogurt", "yogurt"),
     ("paneer", "dairy"), ("butter", "dairy"), ("cheese", "dairy"),
     ("green tea", "hot_drink"), ("tea", "hot_drink"), ("coffee", "hot_drink"),
     ("juice", "cold_drink"), ("cold drink", "cold_drink"), ("soft drink", "cold_drink"),
@@ -494,7 +529,7 @@ _CATEGORY_TAGS = {
     "personal care": "personal_care",
     "snacks": "sweet_snack",
     "beverages": "cold_drink",
-    "dairy": "dairy",
+    "dairy": "milk",
     "bakery": "bread",
     "produce": "vegetable",
     "stationery": "notebook",
