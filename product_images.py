@@ -85,30 +85,32 @@ def _build_search_query(name: str, category: str) -> str:
 
 
 @lru_cache(maxsize=256)
-def fetch_web_photo(name: str, category: str = "") -> str | None:
+def fetch_web_photo_candidates(name: str, category: str = "", count: int = 3) -> tuple:
     """
-    Look up a real photo of this product on the open web via Openverse's
-    free public image-search API (no API key required). Returns a direct
-    https:// image URL on success, or None if anything goes wrong — callers
-    should fall back to an auto-picked icon (see guess_image_tag /
-    get_icon_data_uri below) when this returns None.
+    Search the open web (via Openverse's free, keyless image-search API)
+    for real photos of this product and return up to `count` candidate
+    https:// image URLs as a tuple, best match first. Returns an empty
+    tuple if anything goes wrong (no internet, no results, timeout, etc.)
+    — callers should fall back to an auto-picked icon in that case.
 
-    Cached per (name, category) for the life of the process so we don't
-    hit the API again for a name we've already resolved this session; the
-    resolved URL itself gets stored in products.image_url by the caller,
-    so this only ever runs once per product, at add-time.
+    IMPORTANT: automated keyword search can return a wrong or irrelevant
+    photo (it has no real understanding of the product). Don't display a
+    candidate to customers/on a live storefront without a human picking
+    it first — see fetch_web_photo() below for the single-best-guess
+    version, and prefer showing these candidates to the shopkeeper for
+    manual approval instead (see app.py's "Review photos" flow).
     """
     if requests is None:
-        return None
+        return ()
     query = _build_search_query(name, category)
     if not query:
-        return None
+        return ()
     try:
         resp = requests.get(
             _OPENVERSE_SEARCH_URL,
             params={
                 "q": query,
-                "page_size": 3,
+                "page_size": max(count, 3),
                 "mature": "false",
             },
             timeout=_WEB_PHOTO_TIMEOUT_SECONDS,
@@ -116,13 +118,27 @@ def fetch_web_photo(name: str, category: str = "") -> str | None:
         )
         resp.raise_for_status()
         results = resp.json().get("results", [])
+        urls = []
         for item in results:
             url = item.get("url") or item.get("thumbnail")
             if url and url.startswith("http"):
-                return url
+                urls.append(url)
+            if len(urls) >= count:
+                break
+        return tuple(urls)
     except Exception:
-        pass  # any network/parse failure -> caller falls back to an icon
-    return None
+        return ()
+
+
+def fetch_web_photo(name: str, category: str = "") -> str | None:
+    """
+    Best-guess single photo URL (first candidate), or None. Kept for
+    backward compatibility / bulk-import use where no one is available to
+    approve a pick — see the module note on fetch_web_photo_candidates()
+    above about the accuracy tradeoff of using this unattended.
+    """
+    candidates = fetch_web_photo_candidates(name, category, count=1)
+    return candidates[0] if candidates else None
 
 # ---------------------------------------------------------------------------
 # Icon artwork — shaded, gradient-filled SVGs, 100x100 viewBox.
