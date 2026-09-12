@@ -525,33 +525,62 @@ def page_products(user_id):
                         st.markdown(
                             f'<div class="small-muted" style="padding-top:8px;">'
                             f'📷 {len(icon_only)} product(s) are showing a drawn icon — '
-                            f'fetch a real photo for them from the web instead.</div>',
+                            f'review real photo options for them.</div>',
                             unsafe_allow_html=True,
                         )
                     with ic2:
-                        if st.button("Get real photos", key="fetch_real_photos", use_container_width=True):
-                            updated, unchanged = 0, 0
-                            for _, row in icon_only.iterrows():
-                                try:
-                                    photo_url = product_images.fetch_web_photo(row["name"], row["category"])
-                                except Exception:
-                                    photo_url = None
-                                if photo_url:
-                                    db.update_product_image(int(row["id"]), photo_url)
-                                    updated += 1
-                                else:
-                                    unchanged += 1  # no match found — keeps its current icon
-                            if updated:
-                                st.success(
-                                    f"Found real photos for {updated} product(s)."
-                                    + (f" {unchanged} kept their icon (no match found)." if unchanged else "")
-                                )
-                            else:
-                                st.warning(
-                                    "Couldn't fetch any real photos — check that this app has "
-                                    "internet access, then try again."
-                                )
+                        if st.button("Review real photos", key="review_real_photos", use_container_width=True):
+                            st.session_state["photo_review_queue"] = icon_only["id"].astype(int).tolist()
                             st.rerun()
+
+                review_queue = st.session_state.get("photo_review_queue", [])
+                if review_queue:
+                    st.markdown("---")
+                    st.markdown(
+                        '<div class="panel-title">Pick a real photo</div>'
+                        '<div class="small-muted">Nothing changes until you tap a photo — '
+                        'skip any product where none of these look right.</div>',
+                        unsafe_allow_html=True,
+                    )
+                    current_id = review_queue[0]
+                    current_row = products[products["id"] == current_id]
+                    if current_row.empty:
+                        # product no longer exists (deleted) — move on
+                        st.session_state["photo_review_queue"] = review_queue[1:]
+                        st.rerun()
+                    else:
+                        row = current_row.iloc[0]
+                        st.markdown(f"**{row['name']}** ({len(review_queue)} left to review)")
+                        try:
+                            candidates = product_images.fetch_web_photo_candidates(
+                                row["name"], row["category"], count=3
+                            )
+                        except Exception:
+                            candidates = ()
+
+                        if not candidates:
+                            st.warning(
+                                "No web photo candidates found for this product "
+                                "(no internet access, or no results) — keeping its current icon."
+                            )
+                            if st.button("Next product →", key=f"skip_{current_id}"):
+                                st.session_state["photo_review_queue"] = review_queue[1:]
+                                st.rerun()
+                        else:
+                            cols = st.columns(len(candidates))
+                            for i, (col, url) in enumerate(zip(cols, candidates)):
+                                with col:
+                                    try:
+                                        st.image(url, use_container_width=True)
+                                    except Exception:
+                                        st.caption("(image failed to load)")
+                                    if st.button("Use this photo", key=f"pick_{current_id}_{i}", use_container_width=True):
+                                        db.update_product_image(int(current_id), url)
+                                        st.session_state["photo_review_queue"] = review_queue[1:]
+                                        st.rerun()
+                            if st.button("None of these — skip", key=f"skipbad_{current_id}"):
+                                st.session_state["photo_review_queue"] = review_queue[1:]
+                                st.rerun()
 
                 all_cats_label = i18n.t("all_categories")
                 fc1, fc2 = st.columns([2, 1])
