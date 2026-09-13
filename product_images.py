@@ -43,38 +43,49 @@ from functools import lru_cache
 ICON_SVGS = {
     "rice": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<path d="M32 34 Q30 20 50 18 Q70 20 68 34 L74 40 Q80 56 76 78 Q74 90 60 90 L40 90 Q26 90 24 78 Q20 56 26 40 Z" fill="#E8C77E" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
-<path d="M50 18 Q60 20 62 30" fill="none" stroke="#1F2937" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
-<ellipse cx="50" cy="34" rx="16" ry="5" fill="#D4A85C" stroke="#1F2937" stroke-width="2.5"/>
-<rect x="30" y="55" width="40" height="18" rx="2" fill="#FFF8E7" stroke="#1F2937" stroke-width="2"/>
-<text x="50" y="68" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="800" fill="#1F2937" text-anchor="middle">RICE</text>
+<path d="M30 38 Q26 60 30 82 Q32 90 42 90 L58 90 Q68 90 70 82 Q74 60 70 38 L66 32 Q50 36 34 32 Z" fill="#E8C77E" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
+<path d="M50 34 Q58 36 66 32 L70 38 Q74 60 70 82 Q68 90 58 90 L50 90 Z" fill="#D4A85C" opacity="0.55"/>
+<path d="M38 32 Q50 22 62 32" fill="none" stroke="#1F2937" stroke-width="3" stroke-linecap="round"/>
+<ellipse cx="50" cy="32" rx="4" ry="6" fill="#8B5E3C" stroke="#1F2937" stroke-width="2"/>
+<rect x="32" y="52" width="36" height="20" rx="3" fill="#FFF8E7" stroke="#1F2937" stroke-width="2.5"/>
+<text x="50" y="66" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="800" fill="#1F2937" text-anchor="middle">RICE</text>
+<ellipse cx="38" cy="80" rx="3" ry="1.6" fill="#FFFFFF" stroke="#1F2937" stroke-width="1" transform="rotate(-20 38 80)"/>
+<ellipse cx="62" cy="80" rx="3" ry="1.6" fill="#FFFFFF" stroke="#1F2937" stroke-width="1" transform="rotate(20 62 80)"/>
 </svg>
 """,
 
     "grain": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<path d="M32 34 Q30 20 50 18 Q70 20 68 34 L74 40 Q80 56 76 78 Q74 90 60 90 L40 90 Q26 90 24 78 Q20 56 26 40 Z" fill="#D9A55C" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
-<ellipse cx="50" cy="34" rx="16" ry="5" fill="#B9843C" stroke="#1F2937" stroke-width="2.5"/>
-<rect x="28" y="55" width="44" height="18" rx="2" fill="#FFF3DD" stroke="#1F2937" stroke-width="2"/>
-<text x="50" y="68" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="800" fill="#1F2937" text-anchor="middle">ATTA</text>
+<path d="M30 38 Q26 60 30 82 Q32 90 42 90 L58 90 Q68 90 70 82 Q74 60 70 38 L66 32 Q50 36 34 32 Z" fill="#D9A55C" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
+<path d="M50 34 Q58 36 66 32 L70 38 Q74 60 70 82 Q68 90 58 90 L50 90 Z" fill="#B9843C" opacity="0.55"/>
+<path d="M38 32 Q50 22 62 32" fill="none" stroke="#1F2937" stroke-width="3" stroke-linecap="round"/>
+<ellipse cx="50" cy="32" rx="4" ry="6" fill="#7A5A2E" stroke="#1F2937" stroke-width="2"/>
+<rect x="30" y="52" width="40" height="20" rx="3" fill="#FFF3DD" stroke="#1F2937" stroke-width="2.5"/>
+<text x="50" y="66" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="800" fill="#1F2937" text-anchor="middle">ATTA</text>
 </svg>
 """,
 
     "sugar": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<path d="M34 32 Q32 20 50 18 Q68 20 66 32 L72 40 Q78 56 74 78 Q72 90 58 90 L42 90 Q28 90 26 78 Q22 56 28 40 Z" fill="#FFFFFF" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
-<ellipse cx="50" cy="32" rx="15" ry="5" fill="#EEF0F5" stroke="#1F2937" stroke-width="2.5"/>
-<rect x="30" y="54" width="40" height="18" rx="2" fill="#FDEEF6" stroke="#1F2937" stroke-width="2"/>
-<text x="50" y="67" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="800" fill="#1F2937" text-anchor="middle">SUGAR</text>
+<path d="M32 36 Q28 58 32 82 Q34 90 44 90 L56 90 Q66 90 68 82 Q72 58 68 36 L64 28 Q50 33 36 28 Z" fill="#FFFFFF" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
+<path d="M50 30 Q57 32 64 28 L68 36 Q72 58 68 82 Q66 90 56 90 L50 90 Z" fill="#E7E8F0" opacity="0.6"/>
+<path d="M40 28 Q50 20 60 28" fill="none" stroke="#1F2937" stroke-width="2.5" stroke-linecap="round"/>
+<rect x="30" y="52" width="40" height="18" rx="3" fill="#FDEEF6" stroke="#1F2937" stroke-width="2.5"/>
+<text x="50" y="65" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="800" fill="#1F2937" text-anchor="middle">SUGAR</text>
+<circle cx="40" cy="78" r="1.6" fill="#1F2937" opacity="0.4"/>
+<circle cx="48" cy="82" r="1.6" fill="#1F2937" opacity="0.4"/>
+<circle cx="58" cy="78" r="1.6" fill="#1F2937" opacity="0.4"/>
 </svg>
 """,
 
     "salt": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect x="34" y="36" width="32" height="52" rx="6" fill="#FFFFFF" stroke="#1F2937" stroke-width="3"/>
-<ellipse cx="50" cy="30" rx="18" ry="8" fill="#2A93B8" stroke="#1F2937" stroke-width="3"/>
-<rect x="34" y="58" width="32" height="16" fill="#DCEFF3" stroke="#1F2937" stroke-width="2"/>
-<text x="50" y="69" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="800" fill="#1F2937" text-anchor="middle">SALT</text>
+<path d="M34 40 L66 40 L64 86 Q64 90 58 90 L42 90 Q36 90 36 86 Z" fill="#FFFFFF" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
+<path d="M50 40 L66 40 L64 86 Q64 90 58 90 L50 90 Z" fill="#E7E8F0" opacity="0.6"/>
+<ellipse cx="50" cy="40" rx="16" ry="7" fill="#2A93B8" stroke="#1F2937" stroke-width="3"/>
+<path d="M42 33 Q50 24 58 33" fill="none" stroke="#1F2937" stroke-width="2.5" stroke-linecap="round"/>
+<rect x="38" y="58" width="24" height="18" rx="3" fill="#DCEFF3" stroke="#1F2937" stroke-width="2.5"/>
+<text x="50" y="70" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="800" fill="#1F2937" text-anchor="middle">SALT</text>
 </svg>
 """,
 
@@ -82,8 +93,10 @@ ICON_SVGS = {
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <rect x="42" y="14" width="16" height="12" rx="2" fill="#C99A2B" stroke="#1F2937" stroke-width="2.5"/>
 <path d="M38 26 L62 26 L68 42 L68 84 Q68 90 60 90 L40 90 Q32 90 32 84 L32 42 Z" fill="#F4C15C" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
-<rect x="38" y="52" width="24" height="22" rx="2" fill="#FFF9EC" stroke="#1F2937" stroke-width="2"/>
+<path d="M50 26 L62 26 L68 42 L68 84 Q68 90 60 90 L50 90 Z" fill="#D99A2B" opacity="0.5"/>
+<rect x="38" y="52" width="24" height="22" rx="2" fill="#FFF9EC" stroke="#1F2937" stroke-width="2.5"/>
 <text x="50" y="66" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="800" fill="#1F2937" text-anchor="middle">OIL</text>
+<path d="M36 32 Q34 50 36 70" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
 </svg>
 """,
 
@@ -92,6 +105,9 @@ ICON_SVGS = {
 <rect x="26" y="42" width="48" height="40" rx="4" fill="#FFF6D9" stroke="#1F2937" stroke-width="3"/>
 <path d="M26 42 L36 30 L84 30 L74 42 Z" fill="#FFEBB0" stroke="#1F2937" stroke-width="2.5" stroke-linejoin="round"/>
 <path d="M74 42 L84 30 L84 70 L74 82 Z" fill="#F5DE8E" stroke="#1F2937" stroke-width="2.5" stroke-linejoin="round"/>
+<line x1="76" y1="48" x2="82" y2="40" stroke="#1F2937" stroke-width="1.5" opacity="0.3"/>
+<line x1="76" y1="60" x2="82" y2="52" stroke="#1F2937" stroke-width="1.5" opacity="0.3"/>
+<ellipse cx="36" cy="52" rx="6" ry="3" fill="#FFFFFF" opacity="0.5"/>
 <text x="49" y="67" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="800" fill="#1F2937" text-anchor="middle">PANEER</text>
 </svg>
 """,
@@ -119,6 +135,7 @@ ICON_SVGS = {
     "hot_drink": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <path d="M28 46 L72 46 L67 82 Q66 90 56 90 L44 90 Q34 90 33 82 Z" fill="#8B5E3C" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
+<path d="M50 46 L72 46 L67 82 Q66 90 56 90 L50 90 Z" fill="#6E4526" opacity="0.5"/>
 <ellipse cx="50" cy="46" rx="22" ry="6" fill="#6E4526" stroke="#1F2937" stroke-width="3"/>
 <path d="M72 52 Q86 52 86 64 Q86 76 72 74" fill="none" stroke="#1F2937" stroke-width="4" stroke-linecap="round"/>
 <path d="M40 36 Q44 28 40 20" fill="none" stroke="#1F2937" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
@@ -130,8 +147,11 @@ ICON_SVGS = {
     "cold_drink": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <path d="M44 14 L56 14 L56 26 L62 34 Q66 44 58 50 Q64 58 64 68 L64 84 Q64 90 56 90 L44 90 Q36 90 36 84 L36 68 Q36 58 42 50 Q34 44 38 34 Z" fill="#3EBE7C" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
-<rect x="38" y="60" width="24" height="20" rx="2" fill="#FFFFFF" stroke="#1F2937" stroke-width="2"/>
+<path d="M50 14 L56 14 L56 26 L62 34 Q66 44 58 50 Q64 58 64 68 L64 84 Q64 90 56 90 L50 90 Z" fill="#2C9A63" opacity="0.5"/>
+<rect x="38" y="60" width="24" height="20" rx="2" fill="#FFFFFF" stroke="#1F2937" stroke-width="2.5"/>
 <text x="50" y="73" font-family="Arial, Helvetica, sans-serif" font-size="7" font-weight="800" fill="#1F2937" text-anchor="middle">COLD</text>
+<circle cx="44" cy="40" r="1.5" fill="#FFFFFF" opacity="0.7"/>
+<circle cx="48" cy="32" r="1.2" fill="#FFFFFF" opacity="0.7"/>
 </svg>
 """,
 
@@ -141,6 +161,7 @@ ICON_SVGS = {
 <line x1="35" y1="34" x2="35" y2="74" stroke="#1F2937" stroke-width="2.5"/>
 <line x1="50" y1="34" x2="50" y2="74" stroke="#1F2937" stroke-width="2.5"/>
 <line x1="65" y1="34" x2="65" y2="74" stroke="#1F2937" stroke-width="2.5"/>
+<path d="M24 38 L24 70" stroke="#FFFFFF" stroke-width="2" opacity="0.35" stroke-linecap="round"/>
 <rect x="20" y="18" width="60" height="16" rx="4" fill="#F4C15C" stroke="#1F2937" stroke-width="3"/>
 <text x="50" y="30" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="800" fill="#1F2937" text-anchor="middle">SNACKS</text>
 </svg>
@@ -158,10 +179,12 @@ ICON_SVGS = {
 
     "noodles": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-<rect x="24" y="26" width="52" height="60" rx="6" fill="#F4C15C" stroke="#1F2937" stroke-width="3"/>
+<path d="M26 24 Q50 16 74 24 L80 32 Q84 55 78 82 Q76 90 64 90 L36 90 Q24 90 22 82 Q16 55 20 32 Z" fill="#F4C15C" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
+<path d="M26 24 Q50 16 74 24 L76 30 Q50 22 24 30 Z" fill="#D99A2B" stroke="#1F2937" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M22 82 Q50 90 78 82 L76 88 Q50 94 24 88 Z" fill="#D99A2B" stroke="#1F2937" stroke-width="2.5" stroke-linejoin="round"/>
 <ellipse cx="50" cy="58" rx="20" ry="12" fill="#FFFFFF" stroke="#1F2937" stroke-width="2.5"/>
 <path d="M34 58 Q42 48 50 58 Q58 68 66 58" fill="none" stroke="#D99A2B" stroke-width="3"/>
-<text x="50" y="38" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="800" fill="#1F2937" text-anchor="middle">NOODLES</text>
+<text x="50" y="42" font-family="Arial, Helvetica, sans-serif" font-size="8" font-weight="800" fill="#5A3A10" text-anchor="middle">NOODLES</text>
 </svg>
 """,
 
@@ -187,6 +210,7 @@ ICON_SVGS = {
 <ellipse cx="34" cy="62" rx="10" ry="13" fill="#FFFFFF" stroke="#1F2937" stroke-width="2.5"/>
 <ellipse cx="50" cy="62" rx="10" ry="13" fill="#FFFFFF" stroke="#1F2937" stroke-width="2.5"/>
 <ellipse cx="66" cy="62" rx="10" ry="13" fill="#FFFFFF" stroke="#1F2937" stroke-width="2.5"/>
+<ellipse cx="30" cy="56" rx="3" ry="1.8" fill="#F1EBFE" opacity="0.7"/>
 <text x="50" y="35" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="800" fill="#1F2937" text-anchor="middle">EGGS</text>
 </svg>
 """,
@@ -195,6 +219,7 @@ ICON_SVGS = {
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <circle cx="50" cy="54" r="26" fill="#EF6B5A" stroke="#1F2937" stroke-width="3"/>
 <path d="M50 54 A26 26 0 0 1 70 72" fill="none" stroke="#C94A3C" stroke-width="2" opacity="0.5"/>
+<ellipse cx="40" cy="46" rx="5" ry="3" fill="#FFFFFF" opacity="0.55" transform="rotate(-20 40 46)"/>
 <path d="M42 30 Q38 20 48 18 Q46 26 50 30 Q54 26 52 18 Q62 20 58 30" fill="#2E7D4F" stroke="#1F2937" stroke-width="2.5" stroke-linejoin="round"/>
 <text x="50" y="92" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="800" fill="#1F2937" text-anchor="middle">VEGGIES</text>
 </svg>
@@ -204,6 +229,7 @@ ICON_SVGS = {
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <path d="M50 32 Q34 32 32 52 Q30 76 44 84 Q47 86 50 84 Q53 86 56 84 Q70 76 68 52 Q66 32 50 32Z" fill="#E8483E" stroke="#1F2937" stroke-width="3" stroke-linejoin="round"/>
 <path d="M50 32 Q58 32 62 40 A22 22 0 0 1 58 80" fill="#C4362D" opacity="0.35"/>
+<ellipse cx="40" cy="44" rx="5" ry="3" fill="#FFFFFF" opacity="0.55" transform="rotate(-20 40 44)"/>
 <path d="M50 32 Q48 22 52 16" fill="none" stroke="#1F2937" stroke-width="3" stroke-linecap="round"/>
 <path d="M52 18 Q60 14 66 20" fill="#2E7D4F" stroke="#1F2937" stroke-width="2.5" stroke-linejoin="round"/>
 <text x="50" y="94" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="800" fill="#1F2937" text-anchor="middle">FRUIT</text>
@@ -213,8 +239,9 @@ ICON_SVGS = {
     "spice": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <rect x="32" y="40" width="36" height="46" rx="8" fill="#F4A83C" stroke="#1F2937" stroke-width="3"/>
+<rect x="50" y="40" width="18" height="46" rx="8" fill="#D9862A" opacity="0.55"/>
 <rect x="40" y="24" width="20" height="18" rx="4" fill="#8B5E3C" stroke="#1F2937" stroke-width="2.5"/>
-<rect x="30" y="58" width="40" height="18" fill="#FFF3DD" stroke="#1F2937" stroke-width="2"/>
+<rect x="34" y="58" width="32" height="18" rx="2" fill="#FFF3DD" stroke="#1F2937" stroke-width="2.5"/>
 <text x="50" y="70" font-family="Arial, Helvetica, sans-serif" font-size="7" font-weight="800" fill="#1F2937" text-anchor="middle">MASALA</text>
 </svg>
 """,
@@ -222,6 +249,7 @@ ICON_SVGS = {
     "personal_care": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <rect x="20" y="38" width="60" height="34" rx="16" fill="#F9C6D8" stroke="#1F2937" stroke-width="3"/>
+<rect x="50" y="38" width="30" height="34" rx="16" fill="#F0A8C4" opacity="0.5"/>
 <ellipse cx="35" cy="50" rx="8" ry="5" fill="#FFFFFF" opacity="0.6"/>
 <text x="50" y="59" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="800" fill="#1F2937" text-anchor="middle">SOAP</text>
 </svg>
@@ -230,8 +258,9 @@ ICON_SVGS = {
     "cleaning": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <rect x="34" y="34" width="32" height="52" rx="6" fill="#7DD3E8" stroke="#1F2937" stroke-width="3"/>
+<rect x="50" y="34" width="16" height="52" rx="6" fill="#4FA8C4" opacity="0.5"/>
 <rect x="42" y="20" width="16" height="16" rx="3" fill="#2A93B8" stroke="#1F2937" stroke-width="2.5"/>
-<rect x="38" y="54" width="24" height="20" fill="#FFFFFF" stroke="#1F2937" stroke-width="2"/>
+<rect x="38" y="54" width="24" height="20" rx="2" fill="#FFFFFF" stroke="#1F2937" stroke-width="2.5"/>
 <text x="50" y="67" font-family="Arial, Helvetica, sans-serif" font-size="8" font-weight="800" fill="#1F2937" text-anchor="middle">CLEAN</text>
 </svg>
 """,
@@ -239,6 +268,7 @@ ICON_SVGS = {
     "household": """
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <circle cx="50" cy="46" r="24" fill="#FDE68A" stroke="#1F2937" stroke-width="3"/>
+<path d="M34 40 Q40 26 50 26" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
 <rect x="42" y="68" width="16" height="14" rx="3" fill="#94A3AE" stroke="#1F2937" stroke-width="2.5"/>
 <line x1="44" y1="78" x2="56" y2="78" stroke="#1F2937" stroke-width="2"/>
 <text x="50" y="50" font-family="Arial, Helvetica, sans-serif" font-size="8" font-weight="800" fill="#1F2937" text-anchor="middle">HOME</text>
@@ -251,6 +281,7 @@ ICON_SVGS = {
 <rect x="42" y="12" width="16" height="52" rx="4" fill="#818CF8" stroke="#1F2937" stroke-width="3"/>
 <rect x="42" y="8" width="16" height="8" rx="3" fill="#3730A3" stroke="#1F2937" stroke-width="2.5"/>
 <path d="M42 64 L58 64 L50 80Z" fill="#3730A3" stroke="#1F2937" stroke-width="2.5" stroke-linejoin="round"/>
+<line x1="45" y1="18" x2="45" y2="58" stroke="#FFFFFF" stroke-width="2" opacity="0.4"/>
 </g>
 <text x="50" y="94" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="800" fill="#1F2937" text-anchor="middle">PEN</text>
 </svg>
@@ -260,9 +291,14 @@ ICON_SVGS = {
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 <rect x="28" y="18" width="46" height="64" rx="4" fill="#FFFFFF" stroke="#1F2937" stroke-width="3"/>
 <rect x="18" y="18" width="12" height="64" rx="4" fill="#FB923C" stroke="#1F2937" stroke-width="3"/>
-<line x1="38" y1="34" x2="66" y2="34" stroke="#1F2937" stroke-width="2" opacity="0.35"/>
-<line x1="38" y1="46" x2="66" y2="46" stroke="#1F2937" stroke-width="2" opacity="0.35"/>
-<text x="52" y="66" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="800" fill="#1F2937" text-anchor="middle">NOTES</text>
+<circle cx="24" cy="28" r="2.2" fill="#FFFFFF" stroke="#1F2937" stroke-width="1.5"/>
+<circle cx="24" cy="40" r="2.2" fill="#FFFFFF" stroke="#1F2937" stroke-width="1.5"/>
+<circle cx="24" cy="52" r="2.2" fill="#FFFFFF" stroke="#1F2937" stroke-width="1.5"/>
+<circle cx="24" cy="64" r="2.2" fill="#FFFFFF" stroke="#1F2937" stroke-width="1.5"/>
+<circle cx="24" cy="76" r="2.2" fill="#FFFFFF" stroke="#1F2937" stroke-width="1.5"/>
+<line x1="38" y1="34" x2="66" y2="34" stroke="#1F2937" stroke-width="2" opacity="0.3"/>
+<line x1="38" y1="46" x2="66" y2="46" stroke="#1F2937" stroke-width="2" opacity="0.3"/>
+<text x="52" y="66" font-family="Arial, Helvetica, sans-serif" font-size="8" font-weight="800" fill="#1F2937" text-anchor="middle">NOTES</text>
 </svg>
 """,
 
@@ -272,6 +308,7 @@ ICON_SVGS = {
 <circle cx="32" cy="55" r="6" fill="#F472B6" stroke="#1F2937" stroke-width="2"/>
 <circle cx="50" cy="55" r="6" fill="#818CF8" stroke="#1F2937" stroke-width="2"/>
 <circle cx="68" cy="55" r="6" fill="#F472B6" stroke="#1F2937" stroke-width="2"/>
+<ellipse cx="29" cy="52" rx="1.6" ry="1" fill="#FFFFFF" opacity="0.7"/>
 <text x="50" y="82" font-family="Arial, Helvetica, sans-serif" font-size="7" font-weight="800" fill="#1F2937" text-anchor="middle">MEDICINE</text>
 </svg>
 """,
