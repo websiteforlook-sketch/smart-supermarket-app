@@ -2,14 +2,28 @@
 db.py — Data access layer for Smart Supermarket Inventory & Sales Analytics System.
 Connects to TiDB Cloud Serverless (MySQL-compatible) using credentials in st.secrets.
 All read queries are cached with st.cache_data; writes clear the relevant cache.
+
+Driver note
+-----------
+This uses PyMySQL, a 100% pure-Python MySQL client — deliberately NOT
+mysql-connector-python. mysql-connector-python ships an optional compiled C
+extension, and even when a connection is opened with use_pure=True, the
+package's import/feature-detection path can still touch that extension on
+some hosts. On Streamlit Community Cloud's container image that showed up
+as a hard crash at startup ("double free or corruption (!prev)" / process
+aborted) the moment db.init_tables() opened its first connection — a
+memory-corruption bug in the C extension itself, not fixable from our
+Python code, and not something a try/except can catch (a corrupted-heap
+abort takes the whole process down). PyMySQL has no C extension at all, so
+that entire failure class is structurally impossible here.
 """
 
 import time
 from functools import wraps
 
 import streamlit as st
-import mysql.connector
-from mysql.connector import Error
+import pymysql
+import pymysql.cursors
 from werkzeug.security import generate_password_hash, check_password_hash
 import pandas as pd
 import certifi
@@ -30,26 +44,20 @@ def get_connection():
     Works with both Aiven MySQL and TiDB Cloud Serverless — both require TLS.
     TiDB additionally requires certificate verification, so we always point
     at a trusted CA bundle via certifi.
-
-    use_pure=True forces the pure-Python MySQL driver instead of the compiled
-    C extension. The C extension has crashed with low-level memory-corruption
-    errors on some Streamlit Cloud runtimes running very new Python versions
-    it wasn't built against — the pure-Python path avoids that entirely.
     """
     try:
-        conn = mysql.connector.connect(
+        conn = pymysql.connect(
             host=st.secrets["mysql"]["host"],
             port=st.secrets["mysql"].get("port", 4000),
             user=st.secrets["mysql"]["user"],
             password=st.secrets["mysql"]["password"],
             database=st.secrets["mysql"]["database"],
-            ssl_ca=certifi.where(),
-            ssl_verify_identity=True,
+            ssl={"ca": certifi.where()},
             autocommit=True,
-            use_pure=True,
+            cursorclass=pymysql.cursors.DictCursor,
         )
         return conn
-    except Error as e:
+    except pymysql.err.Error as e:
         st.error(f"Database connection failed: {e}")
         st.stop()
 
@@ -57,11 +65,12 @@ def get_connection():
 def _cursor(dictionary=True):
     conn = get_connection()
     try:
-        conn.ping(reconnect=True, attempts=3, delay=1)
-    except Error:
+        conn.ping(reconnect=True)
+    except pymysql.err.Error:
         get_connection.clear()
         conn = get_connection()
-    return conn, conn.cursor(dictionary=dictionary)
+    cursor_cls = pymysql.cursors.DictCursor if dictionary else pymysql.cursors.Cursor
+    return conn, conn.cursor(cursor_cls)
 
 
 def _with_retry(fn):
@@ -85,7 +94,7 @@ def _with_retry(fn):
         for attempt in range(3):
             try:
                 return fn(*args, **kwargs)
-            except Error as e:
+            except pymysql.err.Error as e:
                 last_err = e
                 get_connection.clear()
                 time.sleep(1.2 * (attempt + 1))
@@ -113,7 +122,7 @@ def init_tables():
                      "owner_name VARCHAR(150) NOT NULL DEFAULT ''"]:
         try:
             cur.execute(f"ALTER TABLE users ADD COLUMN {col_def}")
-        except Error:
+        except pymysql.err.Error:
             pass  # column already exists
     cur.execute("""
         CREATE TABLE IF NOT EXISTS products (
@@ -133,7 +142,7 @@ def init_tables():
     # Idempotent migration for deployments created before image_url existed.
     try:
         cur.execute("ALTER TABLE products ADD COLUMN image_url VARCHAR(500) DEFAULT NULL")
-    except Error:
+    except pymysql.err.Error:
         pass  # column already exists
     cur.execute("""
         CREATE TABLE IF NOT EXISTS sales (
@@ -167,7 +176,7 @@ def create_user(username: str, password: str, shop_name: str, owner_name: str) -
             (username, pw_hash, shop_name.strip(), owner_name.strip()),
         )
         return True, "Account created successfully."
-    except Error as e:
+    except pymysql.err.Error as e:
         return False, f"Signup failed: {e}"
     finally:
         cur.close()
@@ -222,7 +231,7 @@ def reset_password(username: str, new_password: str) -> tuple[bool, str]:
             (pw_hash, username),
         )
         return True, "Password updated — you can log in now."
-    except Error as e:
+    except pymysql.err.Error as e:
         return False, f"Could not reset password: {e}"
     finally:
         cur.close()
@@ -271,11 +280,7 @@ def add_product(user_id, name, category, price, stock, barcode=None, image_url=N
         barcode = barcode.strip() if barcode else None
         image_url = image_url.strip() if image_url else None
         if not image_url:
-            # Default to a bundled icon — safe and instant. Auto-fetching an
-            # unreviewed web photo here previously caused wrong/embarrassing
-            # matches to go live with no one checking them first. Real
-            # photos are opt-in: use the "Review real photos" flow on the
-            # Products page, which shows candidates and lets a human pick.
+            # Default to a bundled icon — safe and instant.
             try:
                 image_url = f"icon:{product_images.guess_image_tag(name, category)}"
             except Exception:
@@ -287,9 +292,9 @@ def add_product(user_id, name, category, price, stock, barcode=None, image_url=N
         )
         get_products.clear()
         return True, "Product added."
-    except mysql.connector.errors.IntegrityError:
+    except pymysql.err.IntegrityError:
         return False, "A product with this barcode already exists."
-    except Error as e:
+    except pymysql.err.Error as e:
         return False, f"Could not add product: {e}"
     finally:
         cur.close()
@@ -308,7 +313,7 @@ def delete_product(product_id: int):
         get_products.clear()
         get_sales.clear()
         return True, "Product removed."
-    except Error as e:
+    except pymysql.err.Error as e:
         return False, f"Could not remove product: {e}"
     finally:
         cur.close()
@@ -349,11 +354,10 @@ def reset_images_to_icons(product_ids: list[int]) -> int:
     """
     Force a batch of products back onto their auto-matched drawn icon,
     overwriting whatever is currently in image_url (including a real web
-    photo that turned out to be wrong, e.g. an unrelated stock photo that
-    got saved before the photo-review gate existed, or a bad pick approved
-    by mistake). Re-derives the icon tag from each product's current
-    name/category rather than trusting any stale tag, so this is safe to
-    call on any product regardless of what's currently stored.
+    photo a shopkeeper pasted in that turned out to be wrong). Re-derives
+    the icon tag from each product's current name/category rather than
+    trusting any stale tag, so this is safe to call on any product
+    regardless of what's currently stored.
 
     Returns the number of products actually updated.
     """
@@ -442,10 +446,7 @@ def bulk_upsert_products(user_id: int, df: pd.DataFrame) -> tuple[int, int, list
         image_url = str(image_url).strip() if image_url and str(image_url).lower() != "nan" else None
 
         if not image_url:
-            # Sheet had no photo for this row — default to a bundled icon
-            # (safe, instant, no chance of an unreviewed wrong web photo
-            # going live). Use "Review real photos" on the Products page
-            # afterward to swap any of these for a human-approved real photo.
+            # Sheet had no photo for this row — default to a bundled icon.
             try:
                 image_url = f"icon:{product_images.guess_image_tag(name, category)}"
             except Exception:
@@ -458,10 +459,10 @@ def bulk_upsert_products(user_id: int, df: pd.DataFrame) -> tuple[int, int, list
                 (user_id, name, category, price, stock, barcode, image_url),
             )
             success += 1
-        except mysql.connector.errors.IntegrityError:
+        except pymysql.err.IntegrityError:
             skipped += 1
             errors.append(f"Row {i+2}: duplicate barcode for '{name}' — skipped.")
-        except Error as e:
+        except pymysql.err.Error as e:
             skipped += 1
             errors.append(f"Row {i+2}: {e}")
     cur.close()
@@ -507,7 +508,7 @@ def record_sale(user_id: int, product_id: int, quantity: int, unit_price: float)
         get_products.clear()
         get_sales.clear()
         return True, f"Sale recorded — ₹{total:.2f}"
-    except Error as e:
+    except pymysql.err.Error as e:
         return False, f"Could not record sale: {e}"
     finally:
         cur.close()
