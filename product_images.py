@@ -1,22 +1,14 @@
 """
 product_images.py — Automatic product image matching.
 
-Two image sources are supported for a product:
-  1. A bundled hand-drawn SVG icon, matched from the product name/category —
-     100% offline, instant, and always relevant to the *category* of item
-     even if not a literal photo of the exact product. This is the default
-     for every new product.
-  2. A real photo, found via Openverse's free, keyless, openly-licensed
-     image-search API (https://api.openverse.org). This is opt-in only,
-     through the "Review real photos" flow on the Products page — a human
-     always looks at candidates and picks one before it's saved. Openverse
-     indexes openly-licensed creative/historical photography (old adverts,
-     museum scans, Flickr, etc.), NOT a curated product-photo catalog, so a
-     keyword search can return something technically tagged with the right
-     word but visually irrelevant (an antique soap advertisement for "bath
-     soap", a landscape for "sunflower oil"). That's a structural limit of
-     this free source, not something query-tuning fully solves — which is
-     why results are never saved without a person choosing one.
+Every product gets a bundled hand-drawn SVG icon, matched from the product
+name/category — 100% offline, instant, and consistent no matter what the
+product is. There is no web-photo lookup: an earlier version of this app
+offered a "Review real photos" flow backed by a free openly-licensed image
+search, but keyword search too often returned something irrelevant (a
+landscape for "sunflower oil", an old advertisement scan for "soap"), so
+that path has been removed entirely — every product now always shows one
+of the drawn icons below.
 
 Storage convention
 -------------------
@@ -24,111 +16,23 @@ guess_image_tag() returns a short tag like "rice" or "personal_care".
 Callers (db.py) store this in the products.image_url column as the string
 "icon:<tag>" (e.g. "icon:rice") — NOT the SVG itself — so the column stays
 tiny. At render time, get_icon_data_uri() turns "icon:<tag>" back into an
-actual displayable image. Anything that isn't an "icon:" value (i.e. a real
-http(s) URL, whether pasted in by a shopkeeper or approved through the photo
-review flow) is passed through untouched — see is_live_photo() below.
+actual displayable image. A shopkeeper can still paste their own photo URL
+into the "Photo URL" field on a product if they want to override the icon —
+see is_live_photo() below, which is used to spot and optionally reset those.
 
-Icon art style (v2 — "bold outline clip-art")
-----------------------------------------------
-Every icon below shares one consistent visual language, matched to the
-reference set (milk / bread / chips / yogurt):
+Icon art style — "bold outline clip-art"
+------------------------------------------
+Every icon below shares one consistent visual language:
   - transparent background (no colored rounded square behind it)
   - thick dark outline (#1F2937, stroke-width 2.5–3)
   - flat, simplified color fills — no gradients or drop shadows
   - the product name baked in as a bold, readable text label, the same
     way a shelf sticker or packaging front would read
-This replaced the older "flat design + long shadow on a colored square"
-icon set, which was visually inconsistent with hand-picked reference art.
 """
 
 import base64
 import re
 from functools import lru_cache
-
-try:
-    import requests
-except ImportError:  # pragma: no cover - requests should be in requirements.txt
-    requests = None
-
-# ---------------------------------------------------------------------------
-# Real product photos (Openverse — free, keyless, openly-licensed image
-# search: https://openverse.org / https://api.openverse.org).
-#
-# IMPORTANT: this is only ever called from the "Review real photos" flow in
-# app.py, which shows a few candidates to the shopkeeper and requires them
-# to tap "Use this photo" before anything is saved. Nothing here writes to
-# the database directly or runs unattended.
-# ---------------------------------------------------------------------------
-
-_OPENVERSE_SEARCH_URL = "https://api.openverse.org/v1/images/"
-_WEB_PHOTO_TIMEOUT_SECONDS = 4
-
-
-def _build_search_query(name: str, category: str) -> str:
-    """Turn a product name into a decent photo-search query, e.g.
-    'Basmati Rice 5kg' -> 'basmati rice', 'Bath Soap' -> 'bath soap'."""
-    n = re.sub(r"\b\d+\s?(kg|g|ml|l|pcs|pack|packs)\b", "", (name or "").lower())
-    n = re.sub(r"[^a-z\s]", " ", n)
-    n = re.sub(r"\s+", " ", n).strip()
-    return n or (category or "product").strip().lower()
-
-
-@lru_cache(maxsize=256)
-def fetch_web_photo_candidates(name: str, category: str = "", count: int = 3) -> tuple:
-    """
-    Search the open web (via Openverse's free, keyless image-search API)
-    for real photos of this product and return up to `count` candidate
-    https:// image URLs as a tuple, best match first. Returns an empty
-    tuple if anything goes wrong (no internet, no results, timeout, etc.)
-    — callers should fall back to an auto-picked icon in that case.
-
-    IMPORTANT: automated keyword search can return a wrong or irrelevant
-    photo (it has no real understanding of the product). Don't display a
-    candidate to customers/on a live storefront without a human picking
-    it first — see app.py's "Review real photos" flow, which is the only
-    place this function is called from.
-    """
-    if requests is None:
-        return ()
-    query = _build_search_query(name, category)
-    if not query:
-        return ()
-    try:
-        resp = requests.get(
-            _OPENVERSE_SEARCH_URL,
-            params={
-                "q": query,
-                "page_size": max(count, 3),
-                "mature": "false",
-            },
-            timeout=_WEB_PHOTO_TIMEOUT_SECONDS,
-            headers={"User-Agent": "SmartMart-Inventory-App/1.0"},
-        )
-        resp.raise_for_status()
-        results = resp.json().get("results", [])
-        urls = []
-        for item in results:
-            url = item.get("url") or item.get("thumbnail")
-            if url and url.startswith("http"):
-                urls.append(url)
-            if len(urls) >= count:
-                break
-        return tuple(urls)
-    except Exception:
-        return ()
-
-
-def fetch_web_photo(name: str, category: str = "") -> str | None:
-    """
-    Best-guess single photo URL (first candidate), or None.
-
-    NOT used anywhere in the unattended add/bulk-import path anymore — see
-    the module note above about why an unreviewed pick from this source is
-    risky. Kept only for callers that explicitly want a single best guess
-    to show a human for approval.
-    """
-    candidates = fetch_web_photo_candidates(name, category, count=1)
-    return candidates[0] if candidates else None
 
 # ---------------------------------------------------------------------------
 # Icon artwork — all tags share one "bold outline clip-art with a text
