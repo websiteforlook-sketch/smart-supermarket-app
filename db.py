@@ -16,6 +16,16 @@ memory-corruption bug in the C extension itself, not fixable from our
 Python code, and not something a try/except can catch (a corrupted-heap
 abort takes the whole process down). PyMySQL has no C extension at all, so
 that entire failure class is structurally impossible here.
+
+Product images
+--------------
+Product images were removed from the app. Nothing here reads or writes an
+image column any more. Older deployments whose `products` table already has
+an `image_url` column don't need a migration — the column is nullable, every
+INSERT below simply omits it, and it's dropped from the Excel report. If you
+want it gone from the schema for good, run this once by hand:
+
+    ALTER TABLE products DROP COLUMN image_url;
 """
 
 import time
@@ -28,8 +38,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import pandas as pd
 import certifi
 from datetime import datetime
-
-import product_images
 
 
 # ---------------------------------------------------------------------------
@@ -133,17 +141,11 @@ def init_tables():
             price DECIMAL(10,2) NOT NULL DEFAULT 0,
             stock INT NOT NULL DEFAULT 0,
             barcode VARCHAR(64) DEFAULT NULL,
-            image_url VARCHAR(500) DEFAULT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
             UNIQUE KEY uniq_user_barcode (user_id, barcode)
         )
     """)
-    # Idempotent migration for deployments created before image_url existed.
-    try:
-        cur.execute("ALTER TABLE products ADD COLUMN image_url VARCHAR(500) DEFAULT NULL")
-    except pymysql.err.Error:
-        pass  # column already exists
     cur.execute("""
         CREATE TABLE IF NOT EXISTS sales (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -244,9 +246,16 @@ def reset_password(username: str, new_password: str) -> tuple[bool, str]:
 @st.cache_data(ttl=20)
 @_with_retry
 def get_products(user_id: int) -> pd.DataFrame:
+    """
+    Fetch this shop's products. Columns are named explicitly rather than
+    SELECT * so that a leftover image_url column in an older deployment's
+    table never reaches the UI or the Excel report.
+    """
     conn, cur = _cursor()
     cur.execute(
-        "SELECT * FROM products WHERE user_id=%s ORDER BY name ASC", (user_id,)
+        """SELECT id, user_id, name, category, price, stock, barcode, created_at
+           FROM products WHERE user_id=%s ORDER BY name ASC""",
+        (user_id,),
     )
     rows = cur.fetchall()
     cur.close()
@@ -257,7 +266,8 @@ def get_product_by_barcode(user_id: int, barcode: str):
     """Look up a single product by barcode for this user. Returns dict or None."""
     conn, cur = _cursor()
     cur.execute(
-        "SELECT * FROM products WHERE user_id=%s AND barcode=%s",
+        """SELECT id, user_id, name, category, price, stock, barcode, created_at
+           FROM products WHERE user_id=%s AND barcode=%s""",
         (user_id, barcode),
     )
     row = cur.fetchone()
@@ -266,29 +276,15 @@ def get_product_by_barcode(user_id: int, barcode: str):
 get_product_by_barcode = _with_retry(get_product_by_barcode)
 
 
-def add_product(user_id, name, category, price, stock, barcode=None, image_url=None):
-    """
-    Add a single product (used by the manual "Add product" form).
-
-    If the shopkeeper didn't paste in their own photo URL, a matching
-    illustration is picked automatically from the product name/category —
-    the same auto-image behaviour bulk upload already had — so a manually
-    added "Basmati Rice" gets a rice icon without any extra step.
-    """
+def add_product(user_id, name, category, price, stock, barcode=None):
+    """Add a single product (used by the manual "Add product" form)."""
     conn, cur = _cursor()
     try:
         barcode = barcode.strip() if barcode else None
-        image_url = image_url.strip() if image_url else None
-        if not image_url:
-            # Default to a bundled icon — safe and instant.
-            try:
-                image_url = f"icon:{product_images.guess_image_tag(name, category)}"
-            except Exception:
-                image_url = None
         cur.execute(
-            """INSERT INTO products (user_id, name, category, price, stock, barcode, image_url)
-               VALUES (%s,%s,%s,%s,%s,%s,%s)""",
-            (user_id, name.strip(), category.strip() or "General", price, stock, barcode, image_url),
+            """INSERT INTO products (user_id, name, category, price, stock, barcode)
+               VALUES (%s,%s,%s,%s,%s,%s)""",
+            (user_id, name.strip(), category.strip() or "General", price, stock, barcode),
         )
         get_products.clear()
         return True, "Product added."
@@ -338,71 +334,14 @@ def update_stock(product_id: int, new_stock: int):
 update_stock = _with_retry(update_stock)
 
 
-def update_product_image(product_id: int, image_url: str):
-    """Set or replace a product's image URL (used by the card-grid quick edit)."""
-    conn, cur = _cursor()
-    cur.execute(
-        "UPDATE products SET image_url=%s WHERE id=%s",
-        (image_url.strip() if image_url else None, product_id),
-    )
-    cur.close()
-    get_products.clear()
-update_product_image = _with_retry(update_product_image)
-
-
-def reset_images_to_icons(product_ids: list[int]) -> int:
-    """
-    Force a batch of products back onto their auto-matched drawn icon,
-    overwriting whatever is currently in image_url (including a real web
-    photo a shopkeeper pasted in that turned out to be wrong). Re-derives
-    the icon tag from each product's current name/category rather than
-    trusting any stale tag, so this is safe to call on any product
-    regardless of what's currently stored.
-
-    Returns the number of products actually updated.
-    """
-    if not product_ids:
-        return 0
-    conn, cur = _cursor()
-    updated = 0
-    try:
-        # Fetch current name/category for just these rows so the icon tag
-        # is guessed fresh (a product may have been renamed since it was
-        # first added).
-        placeholders = ",".join(["%s"] * len(product_ids))
-        cur.execute(
-            f"SELECT id, name, category FROM products WHERE id IN ({placeholders})",
-            tuple(product_ids),
-        )
-        rows = cur.fetchall()
-        for row in rows:
-            try:
-                tag = product_images.guess_image_tag(row["name"], row["category"])
-            except Exception:
-                tag = product_images.DEFAULT_TAG
-            cur.execute(
-                "UPDATE products SET image_url=%s WHERE id=%s",
-                (f"icon:{tag}", row["id"]),
-            )
-            updated += 1
-    finally:
-        cur.close()
-    get_products.clear()
-    return updated
-reset_images_to_icons = _with_retry(reset_images_to_icons)
-
-
 def bulk_upsert_products(user_id: int, df: pd.DataFrame) -> tuple[int, int, list]:
     """
     Insert products from an uploaded CSV/Excel dataframe.
     Column names are normalized (case-insensitive) to:
-    name, category, price, stock, barcode, image_url.
+    name, category, price, stock, barcode.
 
-    If a row doesn't supply its own image_url (no such column in the sheet,
-    or the cell is blank), a relevant bundled illustration is guessed
-    automatically from the product name/category via
-    product_images.guess_image_tag — so "Rice" gets a rice icon, "Pen" gets
-    a pen icon, etc., instead of the plain placeholder box.
+    Any image/photo column in the uploaded sheet is ignored — the app
+    doesn't show product pictures.
 
     Returns (success_count, skipped_count, error_messages).
     """
@@ -419,8 +358,6 @@ def bulk_upsert_products(user_id: int, df: pd.DataFrame) -> tuple[int, int, list
             col_map[col] = "stock"
         elif key in ("barcode", "sku", "code"):
             col_map[col] = "barcode"
-        elif key in ("imageurl", "image", "photo", "photourl", "img"):
-            col_map[col] = "image_url"
     df = df.rename(columns=col_map)
 
     success, skipped, errors = 0, 0, []
@@ -442,21 +379,12 @@ def bulk_upsert_products(user_id: int, df: pd.DataFrame) -> tuple[int, int, list
         category = str(row.get("category", "General") or "General").strip()
         barcode = row.get("barcode")
         barcode = str(barcode).strip() if barcode and str(barcode).lower() != "nan" else None
-        image_url = row.get("image_url")
-        image_url = str(image_url).strip() if image_url and str(image_url).lower() != "nan" else None
-
-        if not image_url:
-            # Sheet had no photo for this row — default to a bundled icon.
-            try:
-                image_url = f"icon:{product_images.guess_image_tag(name, category)}"
-            except Exception:
-                image_url = None
 
         try:
             cur.execute(
-                """INSERT INTO products (user_id, name, category, price, stock, barcode, image_url)
-                   VALUES (%s,%s,%s,%s,%s,%s,%s)""",
-                (user_id, name, category, price, stock, barcode, image_url),
+                """INSERT INTO products (user_id, name, category, price, stock, barcode)
+                   VALUES (%s,%s,%s,%s,%s,%s)""",
+                (user_id, name, category, price, stock, barcode),
             )
             success += 1
         except pymysql.err.IntegrityError:
@@ -479,7 +407,7 @@ def bulk_upsert_products(user_id: int, df: pd.DataFrame) -> tuple[int, int, list
 def get_sales(user_id: int) -> pd.DataFrame:
     conn, cur = _cursor()
     cur.execute(
-        """SELECT s.id, p.name AS product_name, p.category, p.image_url, s.quantity,
+        """SELECT s.id, p.name AS product_name, p.category, s.quantity,
                   s.total_price, s.sold_at
            FROM sales s JOIN products p ON s.product_id = p.id
            WHERE s.user_id=%s ORDER BY s.sold_at DESC""",
