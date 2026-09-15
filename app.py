@@ -1,6 +1,14 @@
 """
 app.py — Smart Supermarket Inventory & Sales Analytics System
 Streamlit + TiDB Cloud (MySQL-compatible) + Pandas/Matplotlib + OpenPyXL
+
+Note on product images
+----------------------
+Product images (drawn icons, auto-matched illustrations and real web photos)
+were removed from this app entirely. Products are identified by name,
+category, price and stock only. If the `products` table in an older
+deployment still has an `image_url` column, it is simply ignored — nothing
+reads or writes it.
 """
 import io
 from datetime import datetime
@@ -16,7 +24,6 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 import db
 import styling
 import i18n
-import product_images
 
 # ---------------------------------------------------------------------------
 # Page config + one-time setup
@@ -83,30 +90,6 @@ def chart_style(fig, ax):
     ax.title.set_color(PALETTE["ink"])
     ax.xaxis.label.set_color(PALETTE["muted"])
     ax.yaxis.label.set_color(PALETTE["muted"])
-
-
-def safe_image_url(row) -> str | None:
-    """
-    Pull image_url out of a pandas row safely. SQL NULLs come back through
-    pandas as NaN (a float), and NaN is truthy in Python — so without this,
-    a product with no photo would try to render `url('nan')` instead of
-    falling back to the placeholder icon.
-    """
-    val = row.get("image_url")
-    if val is None or (isinstance(val, float) and pd.isna(val)):
-        return None
-    val = str(val).strip()
-    return val or None
-
-
-def display_image(raw_image_value):
-    """
-    Turn a raw products.image_url value into something actually displayable:
-      - "icon:<tag>" (auto-picked at add time) -> a bundled illustration
-      - a real http(s) URL a shopkeeper pasted in -> passed through as-is
-      - blank/None -> None (caller shows the placeholder)
-    """
-    return product_images.get_icon_data_uri(raw_image_value)
 
 
 def empty_state(icon: str, text: str):
@@ -420,21 +403,14 @@ def page_products(user_id):
                     price = st.number_input(i18n.t("price_rs"), min_value=0.0, step=1.0, format="%.2f")
                     stock = st.number_input(i18n.t("opening_stock"), min_value=0, step=1)
                 barcode = st.text_input(i18n.t("barcode_optional"))
-                image_url = st.text_input(
-                    i18n.t("photo_url_optional"),
-                    placeholder="https://example.com/photo.jpg",
-                    help=i18n.t("photo_url_help"),
-                )
                 submitted = st.form_submit_button(i18n.t("add_product"), type="primary")
 
             if submitted:
                 if not name.strip():
                     st.warning(i18n.t("name_required"))
                 else:
-                    # Leave image_url blank and db.add_product will auto-match
-                    # an illustration from the product name/category.
                     ok, msg = db.add_product(
-                        user_id, name, category, price, stock, barcode or None, image_url or None
+                        user_id, name, category, price, stock, barcode or None
                     )
                     st.success(msg) if ok else st.error(msg)
 
@@ -491,53 +467,6 @@ def page_products(user_id):
                 st.markdown(f'<div class="panel-title">{i18n.t("all_products_title")}</div>',
                             unsafe_allow_html=True)
 
-                missing_images = products[
-                    products["image_url"].isna() | (products["image_url"].astype(str).str.strip() == "")
-                ]
-                if not missing_images.empty:
-                    mc1, mc2 = st.columns([3, 1])
-                    with mc1:
-                        st.markdown(
-                            f'<div class="small-muted" style="padding-top:8px;">'
-                            f'🖼️ {len(missing_images)} product(s) have no picture yet — added before '
-                            f'auto-matching was turned on.</div>',
-                            unsafe_allow_html=True,
-                        )
-                    with mc2:
-                        if st.button("Fill in missing images", key="backfill_images", use_container_width=True):
-                            filled = 0
-                            for _, row in missing_images.iterrows():
-                                try:
-                                    tag = product_images.guess_image_tag(row["name"], row["category"])
-                                    db.update_product_image(int(row["id"]), f"icon:{tag}")
-                                    filled += 1
-                                except Exception:
-                                    pass  # never let one bad row block the rest
-                            st.success(f"Added pictures to {filled} product(s).")
-                            st.rerun()
-
-                # Products currently showing a REAL photo — leftover from
-                # before real-photo review existed, or a shopkeeper pasted
-                # their own URL in manually. Give a one-click way to reset
-                # any of these back to the safe drawn icon.
-                live_photos = products[
-                    products["image_url"].apply(product_images.is_live_photo)
-                ]
-                if not live_photos.empty:
-                    lc1, lc2 = st.columns([3, 1])
-                    with lc1:
-                        st.markdown(
-                            f'<div class="small-muted" style="padding-top:8px;">'
-                            f'📸 {len(live_photos)} product(s) are showing a real web photo. '
-                            f'If any look wrong, you can undo them back to the safe drawn icon.</div>',
-                            unsafe_allow_html=True,
-                        )
-                    with lc2:
-                        if st.button("Reset all to icons", key="reset_all_live_photos", use_container_width=True):
-                            n = db.reset_images_to_icons(live_photos["id"].astype(int).tolist())
-                            st.success(f"Reset {n} product(s) back to their drawn icon.")
-                            st.rerun()
-
                 all_cats_label = i18n.t("all_categories")
                 fc1, fc2 = st.columns([2, 1])
                 with fc1:
@@ -565,19 +494,20 @@ def page_products(user_id):
                         f'{i18n.t("product_count", n=len(filtered))}</div>',
                         unsafe_allow_html=True,
                     )
+                    # Text-only cards are much shorter than the old image
+                    # tiles, so a wider grid keeps the page from looking
+                    # sparse and stretched.
                     cols_per_row = 4
                     rows = [filtered.iloc[i:i + cols_per_row] for i in range(0, len(filtered), cols_per_row)]
                     for row_df in rows:
                         cols = st.columns(cols_per_row)
                         for col, (_, prod) in zip(cols, row_df.iterrows()):
                             with col:
-                                raw_image = safe_image_url(prod)
                                 st.markdown(
                                     styling.product_card_html(
                                         name=prod["name"],
                                         category=prod["category"],
                                         price=float(prod["price"]),
-                                        image_url=display_image(raw_image),
                                         stock_badge=styling.stock_badge(int(prod["stock"])),
                                     ),
                                     unsafe_allow_html=True,
@@ -587,29 +517,10 @@ def page_products(user_id):
                                         i18n.t("stock"), min_value=0, step=1,
                                         value=int(prod["stock"]), key=f"stock_{prod['id']}",
                                     )
-                                    # If the current photo is one we auto-picked (not
-                                    # something the shopkeeper typed), show the box
-                                    # empty rather than the internal "icon:tag" value —
-                                    # typing something here overrides the auto-match.
-                                    edit_value = "" if product_images.is_auto_icon(raw_image) else (raw_image or "")
-                                    new_image = st.text_input(
-                                        i18n.t("photo_url"), value=edit_value,
-                                        key=f"img_{prod['id']}", placeholder="https://…",
-                                    )
-                                    if product_images.is_live_photo(raw_image):
-                                        if st.button(
-                                            "Reset to drawn icon", key=f"reset_{prod['id']}",
-                                            use_container_width=True,
-                                        ):
-                                            db.reset_images_to_icons([int(prod["id"])])
-                                            st.success(i18n.t("product_updated", name=prod['name']))
-                                            st.rerun()
                                     if st.button(i18n.t("save"), key=f"save_{prod['id']}", type="primary",
                                                  use_container_width=True):
                                         if new_stock != int(prod["stock"]):
                                             db.update_stock(prod["id"], new_stock)
-                                        if new_image != edit_value:
-                                            db.update_product_image(prod["id"], new_image)
                                         st.success(i18n.t("product_updated", name=prod['name']))
                                         st.rerun()
 
@@ -645,7 +556,6 @@ def page_sales(user_id):
                         styling.product_mini_card_html(
                             name=product_row["name"],
                             category=product_row["category"],
-                            image_url=display_image(safe_image_url(product_row)),
                         ),
                         unsafe_allow_html=True,
                     )
@@ -698,7 +608,9 @@ def build_excel_report(products: pd.DataFrame, sales: pd.DataFrame) -> bytes:
             ws.column_dimensions[col[0].column_letter].width = width
 
     ws1 = wb.active
-    write_sheet(ws1, products.drop(columns=["user_id"], errors="ignore"), "Products")
+    # image_url is dropped too, in case an older deployment's table still
+    # carries the column — the report should only show real product data.
+    write_sheet(ws1, products.drop(columns=["user_id", "image_url"], errors="ignore"), "Products")
     ws2 = wb.create_sheet()
     write_sheet(ws2, sales.drop(columns=["id"], errors="ignore"), "Sales")
 
