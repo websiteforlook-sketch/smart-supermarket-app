@@ -11,6 +11,11 @@ the eye can scan status at a glance. Soft lavender-tinted background, white
 rounded cards with gentle shadows, Poppins for display/headings and Inter
 for body & data so numbers stay crisp and readable.
 
+Product cards are text-only — product name, category, price and stock.
+There are no thumbnails anywhere in the app, so the card leads with the
+name at a larger size and carries a thin gradient strip on top to keep the
+grid from reading as a plain wall of text.
+
 Colors:
   --ink          #1F2333   near-black indigo-tinted — primary text
   --bg           #F5F6FC   soft lavender-white — page background
@@ -584,53 +589,52 @@ div[class*="st-key-auth_wrap"] .stColumns { margin-top: 20px; }
     margin-top: 18px; position: relative; max-width: 440px;
 }
 
-/* ---------- Product card grid — rounded, soft shadow ---------- */
+/* ---------- Product card grid — text only, no thumbnails ---------- */
 .product-card {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 16px;
     overflow: hidden;
     margin-bottom: 8px;
+    position: relative;
+    height: 100%;
     box-shadow: 0 2px 10px rgba(99,102,241,0.06);
     transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
-.product-card:hover { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 12px 26px rgba(99,102,241,0.16); }
-.product-thumb {
-    width: 100%; aspect-ratio: 1 / 1;
-    background-size: cover; background-position: center;
-    background-color: var(--primary-soft);
-    border-bottom: 1px solid var(--border);
+.product-card::before {
+    content: "";
+    position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, #6366F1, #8B5CF6 60%, #EC4899);
 }
-.product-thumb-empty { display: flex; align-items: center; justify-content: center; font-size: 1.8rem; opacity: 0.35; }
-.product-body { padding: 16px 16px 18px 16px; }
+.product-card:hover { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 12px 26px rgba(99,102,241,0.16); }
+.product-body { padding: 22px 18px 20px 18px; }
 .product-cat {
     font-family: 'Inter', sans-serif; font-size: 0.66rem; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.07em; color: var(--primary); margin-bottom: 8px;
 }
 .product-name {
-    font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 1rem;
-    color: var(--ink); margin-bottom: 14px; min-height: 2.4em; line-height: 1.3;
+    font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 1.12rem;
+    color: var(--ink); margin-bottom: 18px; min-height: 2.6em; line-height: 1.3;
 }
-.product-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.product-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    flex-wrap: wrap;
+    padding-top: 14px; border-top: 1px solid var(--border);
+}
 .product-price { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.05rem; color: var(--primary-dark); }
 
-/* ---------- Mini product card (Sales page) ---------- */
+/* ---------- Mini product card (Sales page) — text only ---------- */
 .mini-card {
     display: flex; align-items: center; gap: 14px;
     background: var(--primary-soft); border: 1px solid var(--border);
-    border-radius: 14px; padding: 12px 14px; margin: 8px 0 20px 0;
+    border-left: 4px solid var(--primary);
+    border-radius: 14px; padding: 14px 16px; margin: 8px 0 20px 0;
 }
-.mini-thumb {
-    width: 44px; height: 44px; min-width: 44px; border-radius: 10px;
-    background-size: cover; background-position: center;
-    background-color: var(--card); border: 1px solid var(--border);
-}
-.mini-thumb-empty { display: flex; align-items: center; justify-content: center; font-size: 1.05rem; opacity: 0.4; }
 .mini-cat {
     font-family: 'Inter', sans-serif; font-size: 0.62rem; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.06em; color: var(--primary-dark);
 }
-.mini-name { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 0.95rem; color: var(--ink); }
+.mini-name { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 1.02rem; color: var(--ink); }
 
 /* ---------- Language toggle ---------- */
 div[data-testid="stRadio"] div[role="radiogroup"] {
@@ -695,19 +699,10 @@ def kpi_card_html(label: str, value: str, sub: str = "", icon: str = "", accent:
     """
 
 
-def _safe_url(url: str) -> str:
-    """Strip characters that could break out of a CSS url('...') or HTML attribute."""
-    return url.replace("'", "").replace('"', "").replace("(", "").replace(")", "")
-
-
-def product_card_html(name: str, category: str, price: float, image_url, stock_badge: str) -> str:
-    if image_url:
-        thumb = f'<div class="product-thumb" style="background-image:url(\'{_safe_url(image_url)}\');"></div>'
-    else:
-        thumb = '<div class="product-thumb product-thumb-empty">—</div>'
+def product_card_html(name: str, category: str, price: float, stock_badge: str) -> str:
+    """Text-only product card: category, name, price and stock status."""
     return f"""
     <div class="product-card">
-        {thumb}
         <div class="product-body">
             <div class="product-cat">{category}</div>
             <div class="product-name">{name}</div>
@@ -720,14 +715,10 @@ def product_card_html(name: str, category: str, price: float, image_url, stock_b
     """
 
 
-def product_mini_card_html(name: str, category: str, image_url) -> str:
-    if image_url:
-        thumb = f'<div class="mini-thumb" style="background-image:url(\'{_safe_url(image_url)}\');"></div>'
-    else:
-        thumb = '<div class="mini-thumb mini-thumb-empty">—</div>'
+def product_mini_card_html(name: str, category: str) -> str:
+    """Compact text-only product summary used on the Sales page."""
     return f"""
     <div class="mini-card">
-        {thumb}
         <div>
             <div class="mini-cat">{category}</div>
             <div class="mini-name">{name}</div>
