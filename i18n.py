@@ -15,6 +15,9 @@ even logging in) and again in the sidebar once logged in.
 
 Product data itself (names, categories the shopkeeper typed in) is never
 translated — only the app's own UI chrome (labels, buttons, instructions).
+
+The product-photo strings (photo URL field, auto-match help text) were
+removed along with the product-image feature — products are shown by name.
 """
 
 import streamlit as st
@@ -120,17 +123,13 @@ TRANSLATIONS = {
     "price_rs": {"en": "Price (₹)", "gu": "કિંમત (₹)"},
     "opening_stock": {"en": "Opening stock", "gu": "શરૂઆતનો સ્ટોક"},
     "barcode_optional": {"en": "Barcode (optional)", "gu": "બારકોડ (વૈકલ્પિક)"},
-    "photo_url_optional": {"en": "Product photo URL (optional — leave blank to auto-match one)",
-                            "gu": "ઉત્પાદનના ફોટાની URL (વૈકલ્પિક — ખાલી રાખશો તો આપોઆપ મેળવાશે)"},
-    "photo_url_help": {"en": "Paste a direct link to override the auto-matched illustration.",
-                        "gu": "આપોઆપ મળેલ ચિત્ર બદલવા માટે સીધી લિંક પેસ્ટ કરો."},
     "add_product": {"en": "Add product", "gu": "ઉત્પાદન ઉમેરો"},
     "name_required": {"en": "Product name is required.", "gu": "ઉત્પાદનનું નામ જરૂરી છે."},
     "bulk_instructions": {"en": "Upload a CSV or Excel file with columns: **name, category, price, "
-                                 "stock, barcode, image_url** (barcode and image_url are optional; "
-                                 "column names are matched case-insensitively).",
+                                 "stock, barcode** (barcode is optional; column names are matched "
+                                 "case-insensitively).",
                            "gu": "આ કોલમ સાથે CSV અથવા Excel ફાઇલ અપલોડ કરો: **name, category, price, "
-                                 "stock, barcode, image_url** (barcode અને image_url વૈકલ્પિક છે)."},
+                                 "stock, barcode** (barcode વૈકલ્પિક છે)."},
     "choose_file": {"en": "Choose file", "gu": "ફાઇલ પસંદ કરો"},
     "import_products": {"en": "Import these products", "gu": "આ ઉત્પાદનો આયાત કરો"},
     "imported_summary": {"en": "Imported {success} product(s). Skipped {skipped}.",
@@ -170,26 +169,6 @@ TRANSLATIONS = {
                                 "gu": "બારકોડ **{code}** માટે કોઈ ઉત્પાદન મળ્યું નથી. નવા ઉત્પાદન તરીકે ઉમેરો:"},
     "create_product": {"en": "Create product", "gu": "ઉત્પાદન બનાવો"},
 
-    "tab_add_by_photo": {"en": "Add by photo", "gu": "ફોટોથી ઉમેરો"},
-    "photo_scan_intro": {"en": "Upload a photo of the product. If the brand or product name is "
-                                "visible in the photo, we'll try to match it to an existing product "
-                                "automatically — otherwise we'll help you add it as new.",
-                          "gu": "ઉત્પાદનનો ફોટો અપલોડ કરો. જો ફોટામાં બ્રાન્ડ અથવા ઉત્પાદનનું નામ દેખાય "
-                                "છે, તો અમે તેને હાલના ઉત્પાદન સાથે આપોઆપ મેળવવાનો પ્રયત્ન કરીશું."},
-    "photo_scan_upload_label": {"en": "Choose a product photo", "gu": "ઉત્પાદનનો ફોટો પસંદ કરો"},
-    "ocr_unavailable": {"en": "Photo recognition isn't set up on this server yet — the `pytesseract` "
-                               "package and `tesseract-ocr` system dependency need to be added "
-                               "(see requirements.txt / packages.txt). Add products manually for now.",
-                         "gu": "આ સર્વર પર ફોટો ઓળખ હજુ સેટ નથી થઈ. હાલ પૂરતું ઉત્પાદન જાતે ઉમેરો."},
-    "photo_match_found": {"en": "Recognized: **{name}** ({category}) — current stock {stock}, ₹{price}",
-                           "gu": "ઓળખાયું: **{name}** ({category}) — હાલનો સ્ટોક {stock}, ₹{price}"},
-    "photo_no_match": {"en": "Couldn't confidently match this to an existing product. Check the "
-                              "name below and add it.",
-                        "gu": "આને હાલના ઉત્પાદન સાથે વિશ્વાસપૂર્વક મેળવી શકાયું નથી. નીચેનું નામ "
-                              "તપાસો અને ઉમેરો."},
-    "photo_detected_text": {"en": "Text we could read from the photo: \"{text}\"",
-                             "gu": "ફોટામાંથી વાંચી શકાયેલ લખાણ: \"{text}\""},
-
     "search_products": {"en": "Search products", "gu": "ઉત્પાદનો શોધો"},
     "search_placeholder": {"en": "Search by name…", "gu": "નામ પ્રમાણે શોધો…"},
     "all_categories": {"en": "All categories", "gu": "બધી શ્રેણીઓ"},
@@ -200,7 +179,6 @@ TRANSLATIONS = {
     "product_count": {"en": "{n} product(s)", "gu": "{n} ઉત્પાદન(ો)"},
     "edit": {"en": "Edit", "gu": "સંપાદિત કરો"},
     "stock": {"en": "Stock", "gu": "સ્ટોક"},
-    "photo_url": {"en": "Photo URL", "gu": "ફોટો URL"},
     "save": {"en": "Save", "gu": "સાચવો"},
     "product_updated": {"en": "{name} updated.", "gu": "{name} અપડેટ થયું."},
 
