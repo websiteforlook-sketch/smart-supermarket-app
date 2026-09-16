@@ -104,6 +104,16 @@ TRANSLATIONS = {
     "kpi_sales_today": {"en": "Sales today", "gu": "આજનું વેચાણ"},
     "kpi_low_stock": {"en": "Low stock alerts", "gu": "ઓછા સ્ટોકની ચેતવણી"},
     "kpi_low_stock_sub": {"en": "5 units or fewer", "gu": "5 કે તેથી ઓછા એકમો"},
+    "kpi_profit_today": {"en": "Profit today", "gu": "આજનો નફો"},
+    "kpi_loss_today": {"en": "Loss today", "gu": "આજની ખોટ"},
+    "kpi_net_profit": {"en": "Net profit (all-time)", "gu": "કુલ નફો (અત્યાર સુધી)"},
+    "kpi_net_profit_sub": {"en": "profit minus loss, all sales", "gu": "નફો ઓછો ખોટ, બધા વેચાણ"},
+    "missing_cost_price_warning": {
+        "en": "{n} product(s) have no cost price set — their profit shows as ₹0 until you add "
+              "one in Products → All products → Edit.",
+        "gu": "{n} ઉત્પાદન(ો) માટે ખરીદ કિંમત સેટ નથી — જ્યાં સુધી તમે Products → All products → "
+              "Edit માં ઉમેરો નહીં ત્યાં સુધી તેમનો નફો ₹0 બતાવશે.",
+    },
     "top_selling": {"en": "Top-selling products", "gu": "સૌથી વધુ વેચાતા ઉત્પાદનો"},
     "stock_by_category": {"en": "Stock by category", "gu": "શ્રેણી પ્રમાણે સ્ટોક"},
     "low_stock_title": {"en": "Low stock — restock soon", "gu": "ઓછો સ્ટોક — ટૂંક સમયમાં ભરો"},
@@ -121,15 +131,21 @@ TRANSLATIONS = {
     "product_name": {"en": "Product name", "gu": "ઉત્પાદનનું નામ"},
     "category": {"en": "Category", "gu": "શ્રેણી"},
     "price_rs": {"en": "Price (₹)", "gu": "કિંમત (₹)"},
+    "cost_price_rs": {"en": "Cost price (₹)", "gu": "ખરીદ કિંમત (₹)"},
+    "cost_price_help": {
+        "en": "What you paid per unit — used to calculate profit. Leave 0 if you'd rather not track it yet.",
+        "gu": "તમે એકમ દીઠ કેટલું ચૂકવ્યું — નફો ગણવા માટે વપરાય છે. હાલ ટ્રેક ન કરવું હોય તો 0 રહેવા દો.",
+    },
     "opening_stock": {"en": "Opening stock", "gu": "શરૂઆતનો સ્ટોક"},
     "barcode_optional": {"en": "Barcode (optional)", "gu": "બારકોડ (વૈકલ્પિક)"},
     "add_product": {"en": "Add product", "gu": "ઉત્પાદન ઉમેરો"},
     "name_required": {"en": "Product name is required.", "gu": "ઉત્પાદનનું નામ જરૂરી છે."},
     "bulk_instructions": {"en": "Upload a CSV or Excel file with columns: **name, category, price, "
-                                 "stock, barcode** (barcode is optional; column names are matched "
-                                 "case-insensitively).",
+                                 "cost_price, stock, barcode** (cost_price and barcode are optional; "
+                                 "column names are matched case-insensitively). Add cost_price if you "
+                                 "want the Dashboard's profit numbers to be accurate for these products.",
                            "gu": "આ કોલમ સાથે CSV અથવા Excel ફાઇલ અપલોડ કરો: **name, category, price, "
-                                 "stock, barcode** (barcode વૈકલ્પિક છે)."},
+                                 "cost_price, stock, barcode** (cost_price અને barcode વૈકલ્પિક છે)."},
     "choose_file": {"en": "Choose file", "gu": "ફાઇલ પસંદ કરો"},
     "import_products": {"en": "Import these products", "gu": "આ ઉત્પાદનો આયાત કરો"},
     "imported_summary": {"en": "Imported {success} product(s). Skipped {skipped}.",
