@@ -325,34 +325,6 @@ def page_dashboard(user_id):
         sold_at_ist = pd.to_datetime(sales["sold_at"]).dt.tz_localize("UTC").dt.tz_convert(IST)
         today_sales = float(sales.loc[sold_at_ist.dt.date == today, "total_price"].sum())
 
-    # Profit/loss per sale, from the cost-price snapshot db.record_sale takes
-    # at the moment of sale (see the "Profit & loss" note in db.py). A sale
-    # with profit_per_sale < 0 means it was sold below what it cost the shop
-    # — kept as a separate "loss" figure rather than just netting it away,
-    # since a shopkeeper specifically asked to see profit *and* loss.
-    if not sales.empty:
-        sales = sales.copy()
-        sales["profit_per_sale"] = sales["total_price"] - (sales["cost_price"] * sales["quantity"])
-        today_mask = sold_at_ist.dt.date == today
-        today_profit = float(sales.loc[today_mask & (sales["profit_per_sale"] > 0), "profit_per_sale"].sum())
-        today_loss = -float(sales.loc[today_mask & (sales["profit_per_sale"] < 0), "profit_per_sale"].sum())
-        net_profit_all_time = float(sales["profit_per_sale"].sum())
-    else:
-        today_profit = 0.0
-        today_loss = 0.0
-        net_profit_all_time = 0.0
-
-    # Products with no cost price entered still show 0 profit on every sale
-    # (not an inflated 100% margin) because db.record_sale snapshots
-    # cost_price=0 for them — but 0 profit is just as misleading as 100% if
-    # the shopkeeper simply hasn't gotten around to pricing the item yet.
-    # Flag it rather than let the KPI look quietly wrong.
-    missing_cost_count = 0
-    if not products.empty:
-        missing_cost_count = int(
-            (products["cost_price"].fillna(0) <= 0).sum()
-        )
-
     with st.container(key="kpi_row"):
         cols = st.columns(4)
         kpis = [
@@ -364,24 +336,6 @@ def page_dashboard(user_id):
         for c, (label, value, sub, icon, accent) in zip(cols, kpis):
             with c:
                 st.markdown(styling.kpi_card_html(label, value, sub, icon, accent), unsafe_allow_html=True)
-
-    with st.container(key="kpi_row_profit"):
-        cols = st.columns(3)
-        profit_kpis = [
-            (i18n.t("kpi_profit_today"), f"₹{today_profit:,.0f}", today.strftime("%d %b %Y"), "📈", "success"),
-            (i18n.t("kpi_loss_today"), f"₹{today_loss:,.0f}", today.strftime("%d %b %Y"), "📉", "danger"),
-            (i18n.t("kpi_net_profit"), f"₹{net_profit_all_time:,.0f}", i18n.t("kpi_net_profit_sub"), "🧮", "primary"),
-        ]
-        for c, (label, value, sub, icon, accent) in zip(cols, profit_kpis):
-            with c:
-                st.markdown(styling.kpi_card_html(label, value, sub, icon, accent), unsafe_allow_html=True)
-
-    if missing_cost_count > 0:
-        st.markdown(
-            f'<div class="small-muted" style="margin:-4px 0 20px 0;">'
-            f'💡 {i18n.t("missing_cost_price_warning", n=missing_cost_count)}</div>',
-            unsafe_allow_html=True,
-        )
 
     c1, c2 = st.columns(2)
     with c1:
@@ -448,14 +402,7 @@ def page_products(user_id):
                 with c2:
                     price = st.number_input(i18n.t("price_rs"), min_value=0.0, step=1.0, format="%.2f")
                     stock = st.number_input(i18n.t("opening_stock"), min_value=0, step=1)
-                c3, c4 = st.columns(2)
-                with c3:
-                    cost_price = st.number_input(
-                        i18n.t("cost_price_rs"), min_value=0.0, step=1.0, format="%.2f",
-                        help=i18n.t("cost_price_help"),
-                    )
-                with c4:
-                    barcode = st.text_input(i18n.t("barcode_optional"))
+                barcode = st.text_input(i18n.t("barcode_optional"))
                 submitted = st.form_submit_button(i18n.t("add_product"), type="primary")
 
             if submitted:
@@ -463,7 +410,7 @@ def page_products(user_id):
                     st.warning(i18n.t("name_required"))
                 else:
                     ok, msg = db.add_product(
-                        user_id, name, category, price, stock, barcode or None, cost_price
+                        user_id, name, category, price, stock, barcode or None
                     )
                     st.success(msg) if ok else st.error(msg)
 
@@ -570,17 +517,10 @@ def page_products(user_id):
                                         i18n.t("stock"), min_value=0, step=1,
                                         value=int(prod["stock"]), key=f"stock_{prod['id']}",
                                     )
-                                    new_cost = st.number_input(
-                                        i18n.t("cost_price_rs"), min_value=0.0, step=1.0, format="%.2f",
-                                        value=float(prod.get("cost_price") or 0),
-                                        key=f"cost_{prod['id']}", help=i18n.t("cost_price_help"),
-                                    )
                                     if st.button(i18n.t("save"), key=f"save_{prod['id']}", type="primary",
                                                  use_container_width=True):
                                         if new_stock != int(prod["stock"]):
                                             db.update_stock(prod["id"], new_stock)
-                                        if new_cost != float(prod.get("cost_price") or 0):
-                                            db.update_product_cost(prod["id"], new_cost)
                                         st.success(i18n.t("product_updated", name=prod['name']))
                                         st.rerun()
 
@@ -672,14 +612,7 @@ def build_excel_report(products: pd.DataFrame, sales: pd.DataFrame) -> bytes:
     # carries the column — the report should only show real product data.
     write_sheet(ws1, products.drop(columns=["user_id", "image_url"], errors="ignore"), "Products")
     ws2 = wb.create_sheet()
-    sales_out = sales.drop(columns=["id"], errors="ignore")
-    if not sales_out.empty and "cost_price" in sales_out.columns:
-        # Profit per line item, same math as the dashboard KPIs — so the
-        # exported report and the on-screen numbers always agree.
-        sales_out = sales_out.assign(
-            profit=sales_out["total_price"] - (sales_out["cost_price"] * sales_out["quantity"])
-        ).rename(columns={"cost_price": "cost_price_at_sale"})
-    write_sheet(ws2, sales_out, "Sales")
+    write_sheet(ws2, sales.drop(columns=["id"], errors="ignore"), "Sales")
 
     buf = io.BytesIO()
     wb.save(buf)
