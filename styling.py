@@ -202,19 +202,30 @@ section[data-testid="stSidebar"] .stRadio label {
     letter-spacing: -0.01em;
     color: #fff !important;
 }
-/* Small round profile-photo avatar, shown right after the SmartMart
-   wordmark in the sidebar brand row (only rendered when the shopkeeper
-   has uploaded a profile photo on the Profile page). margin-left: auto
-   pushes it to the far right of the flex row. */
-.sidebar-avatar {
-    width: 34px;
-    height: 34px;
-    min-width: 34px;
+/* Row pairing the shopkeeper's profile photo with the shop name / owner
+   name, shown below the SmartMart wordmark. */
+.sidebar-profile-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 2px;
+}
+/* Larger round profile-photo avatar (or placeholder) shown in that row. */
+.sidebar-avatar-lg {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
     border-radius: 50%;
     object-fit: cover;
-    margin-left: auto;
-    border: 2px solid rgba(255,255,255,0.55);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    border: 3px solid rgba(255,255,255,0.55);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.28);
+}
+.sidebar-avatar-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    background: rgba(255,255,255,0.12);
 }
 .sidebar-shop {
     font-family: 'Poppins', sans-serif;
