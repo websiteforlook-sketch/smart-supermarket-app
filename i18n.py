@@ -18,6 +18,12 @@ translated — only the app's own UI chrome (labels, buttons, instructions).
 
 The product-photo strings (photo URL field, auto-match help text) were
 removed along with the product-image feature — products are shown by name.
+
+Dashboard KPI update
+---------------------
+Added "kpi_loss_today" so the 4th dashboard KPI card can relabel itself
+from "Profit today" to "Loss today" when today's profit is negative,
+instead of only tinting the existing "Profit today" label red.
 """
 
 import streamlit as st
@@ -105,6 +111,7 @@ TRANSLATIONS = {
     "kpi_stock_value_sub": {"en": "at current price × qty", "gu": "વર્તમાન કિંમત × જથ્થા પ્રમાણે"},
     "kpi_sales_today": {"en": "Sales today", "gu": "આજનું વેચાણ"},
     "kpi_profit_today": {"en": "Profit today", "gu": "આજનો નફો"},
+    "kpi_loss_today": {"en": "Loss today", "gu": "આજનું નુકસાન"},
     "kpi_profit_today_sub_pos": {"en": "revenue minus cost", "gu": "આવક બાદ ખર્ચ"},
     "kpi_profit_today_sub_neg": {"en": "running at a loss today", "gu": "આજે નુકસાનમાં"},
     "kpi_low_stock": {"en": "Low stock alerts", "gu": "ઓછા સ્ટોકની ચેતવણી"},
