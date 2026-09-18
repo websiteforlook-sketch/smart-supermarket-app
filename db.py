@@ -26,6 +26,19 @@ INSERT below simply omits it, and it's dropped from the Excel report. If you
 want it gone from the schema for good, run this once by hand:
 
     ALTER TABLE products DROP COLUMN image_url;
+
+Cost price / profit tracking
+-----------------------------
+`products.cost_price` holds the current purchase/cost price for a product.
+`sales.cost_price` snapshots that cost at the moment of sale, so profit for
+a historical sale stays accurate even if the product's cost price changes
+later. Profit for any sale = total_price - (cost_price * quantity).
+
+Profile
+-------
+`users` gained `mobile_number`, `email`, and `profile_photo` (stored as raw
+bytes, LONGBLOB) so a shopkeeper can maintain a simple profile page with an
+optional photo, alongside the shop_name / owner_name that already existed.
 """
 
 import time
@@ -121,23 +134,17 @@ def init_tables():
             password_hash VARCHAR(255) NOT NULL,
             shop_name VARCHAR(150) NOT NULL DEFAULT '',
             owner_name VARCHAR(150) NOT NULL DEFAULT '',
-            mobile VARCHAR(30) DEFAULT NULL,
-            email VARCHAR(190) DEFAULT NULL,
-            profile_photo MEDIUMBLOB NULL,
-            profile_photo_mime VARCHAR(100) DEFAULT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     """)
     # Safe, idempotent migration for anyone who created the users table
-    # before shop_name/owner_name existed (older deployments of this app).
-    for col_def in [
-        "shop_name VARCHAR(150) NOT NULL DEFAULT ''",
-        "owner_name VARCHAR(150) NOT NULL DEFAULT ''",
-        "mobile VARCHAR(30) DEFAULT NULL",
-        "email VARCHAR(190) DEFAULT NULL",
-        "profile_photo MEDIUMBLOB NULL",
-        "profile_photo_mime VARCHAR(100) DEFAULT NULL",
-    ]:
+    # before shop_name/owner_name/mobile_number/email/profile_photo existed
+    # (older deployments of this app).
+    for col_def in ["shop_name VARCHAR(150) NOT NULL DEFAULT ''",
+                     "owner_name VARCHAR(150) NOT NULL DEFAULT ''",
+                     "mobile_number VARCHAR(20) NOT NULL DEFAULT ''",
+                     "email VARCHAR(150) NOT NULL DEFAULT ''",
+                     "profile_photo LONGBLOB NULL"]:
         try:
             cur.execute(f"ALTER TABLE users ADD COLUMN {col_def}")
         except pymysql.err.Error:
@@ -148,7 +155,6 @@ def init_tables():
             user_id INT NOT NULL,
             name VARCHAR(150) NOT NULL,
             category VARCHAR(80) DEFAULT 'General',
-            cost_price DECIMAL(10,2) NOT NULL DEFAULT 0,
             price DECIMAL(10,2) NOT NULL DEFAULT 0,
             stock INT NOT NULL DEFAULT 0,
             barcode VARCHAR(64) DEFAULT NULL,
@@ -157,6 +163,11 @@ def init_tables():
             UNIQUE KEY uniq_user_barcode (user_id, barcode)
         )
     """)
+    # Safe, idempotent migration for cost_price (needed for profit/loss).
+    try:
+        cur.execute("ALTER TABLE products ADD COLUMN cost_price DECIMAL(10,2) NOT NULL DEFAULT 0")
+    except pymysql.err.Error:
+        pass  # column already exists
     cur.execute("""
         CREATE TABLE IF NOT EXISTS sales (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -164,21 +175,18 @@ def init_tables():
             product_id INT NOT NULL,
             quantity INT NOT NULL,
             total_price DECIMAL(10,2) NOT NULL,
-            cost_price DECIMAL(10,2) NOT NULL DEFAULT 0,
             sold_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
             FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
         )
     """)
-    # Idempotent migrations for databases created by the previous version.
-    for table, col_def in [
-        ("products", "cost_price DECIMAL(10,2) NOT NULL DEFAULT 0"),
-        ("sales", "cost_price DECIMAL(10,2) NOT NULL DEFAULT 0"),
-    ]:
-        try:
-            cur.execute(f"ALTER TABLE {table} ADD COLUMN {col_def}")
-        except pymysql.err.Error:
-            pass
+    # Safe, idempotent migration: snapshot of cost_price at time of sale,
+    # so historical profit stays accurate even if a product's cost changes
+    # later.
+    try:
+        cur.execute("ALTER TABLE sales ADD COLUMN cost_price DECIMAL(10,2) NOT NULL DEFAULT 0")
+    except pymysql.err.Error:
+        pass  # column already exists
     cur.close()
 
 
@@ -234,35 +242,6 @@ def get_user_by_username(username: str):
 get_user_by_username = _with_retry(get_user_by_username)
 
 
-def get_user_by_id(user_id: int):
-    conn, cur = _cursor()
-    cur.execute("SELECT id, username, shop_name, owner_name, mobile, email, profile_photo, profile_photo_mime FROM users WHERE id=%s", (user_id,))
-    row = cur.fetchone()
-    cur.close()
-    return row
-get_user_by_id = _with_retry(get_user_by_id)
-
-
-def update_profile(user_id: int, shop_name: str, owner_name: str, mobile: str, email: str, photo_bytes=None, photo_mime=None):
-    conn, cur = _cursor()
-    try:
-        if photo_bytes is None:
-            cur.execute(
-                "UPDATE users SET shop_name=%s, owner_name=%s, mobile=%s, email=%s WHERE id=%s",
-                (shop_name.strip(), owner_name.strip(), mobile.strip() or None, email.strip() or None, user_id),
-            )
-        else:
-            cur.execute(
-                "UPDATE users SET shop_name=%s, owner_name=%s, mobile=%s, email=%s, profile_photo=%s, profile_photo_mime=%s WHERE id=%s",
-                (shop_name.strip(), owner_name.strip(), mobile.strip() or None, email.strip() or None, photo_bytes, photo_mime, user_id),
-            )
-        return True, "Profile updated successfully."
-    except pymysql.err.Error as e:
-        return False, f"Could not update profile: {e}"
-    finally:
-        cur.close()
-
-
 def reset_password(username: str, new_password: str) -> tuple[bool, str]:
     """
     Reset a user's password by username.
@@ -290,6 +269,54 @@ def reset_password(username: str, new_password: str) -> tuple[bool, str]:
 
 
 # ---------------------------------------------------------------------------
+# Profile
+# ---------------------------------------------------------------------------
+
+def get_profile(user_id: int):
+    """Fetch a user's full profile, including their photo bytes if set."""
+    conn, cur = _cursor()
+    cur.execute(
+        """SELECT id, username, shop_name, owner_name, mobile_number, email, profile_photo
+           FROM users WHERE id=%s""",
+        (user_id,),
+    )
+    row = cur.fetchone()
+    cur.close()
+    return row
+get_profile = _with_retry(get_profile)
+
+
+def update_profile(user_id: int, shop_name: str, owner_name: str, mobile_number: str,
+                    email: str, photo_bytes: bytes | None = None) -> tuple[bool, str]:
+    """
+    Update a user's profile details. photo_bytes is optional — pass None to
+    leave the stored photo untouched (e.g. the shopkeeper didn't upload a
+    new one this time).
+    """
+    conn, cur = _cursor()
+    try:
+        if photo_bytes is not None:
+            cur.execute(
+                """UPDATE users SET shop_name=%s, owner_name=%s, mobile_number=%s,
+                   email=%s, profile_photo=%s WHERE id=%s""",
+                (shop_name.strip(), owner_name.strip(), mobile_number.strip(),
+                 email.strip(), photo_bytes, user_id),
+            )
+        else:
+            cur.execute(
+                """UPDATE users SET shop_name=%s, owner_name=%s, mobile_number=%s,
+                   email=%s WHERE id=%s""",
+                (shop_name.strip(), owner_name.strip(), mobile_number.strip(),
+                 email.strip(), user_id),
+            )
+        return True, "Profile updated."
+    except pymysql.err.Error as e:
+        return False, f"Could not update profile: {e}"
+    finally:
+        cur.close()
+
+
+# ---------------------------------------------------------------------------
 # Products
 # ---------------------------------------------------------------------------
 
@@ -303,7 +330,7 @@ def get_products(user_id: int) -> pd.DataFrame:
     """
     conn, cur = _cursor()
     cur.execute(
-        """SELECT id, user_id, name, category, cost_price, price, stock, barcode, created_at
+        """SELECT id, user_id, name, category, price, stock, barcode, cost_price, created_at
            FROM products WHERE user_id=%s ORDER BY name ASC""",
         (user_id,),
     )
@@ -316,7 +343,7 @@ def get_product_by_barcode(user_id: int, barcode: str):
     """Look up a single product by barcode for this user. Returns dict or None."""
     conn, cur = _cursor()
     cur.execute(
-        """SELECT id, user_id, name, category, cost_price, price, stock, barcode, created_at
+        """SELECT id, user_id, name, category, price, stock, barcode, cost_price, created_at
            FROM products WHERE user_id=%s AND barcode=%s""",
         (user_id, barcode),
     )
@@ -332,9 +359,9 @@ def add_product(user_id, name, category, price, stock, barcode=None, cost_price=
     try:
         barcode = barcode.strip() if barcode else None
         cur.execute(
-            """INSERT INTO products (user_id, name, category, cost_price, price, stock, barcode)
+            """INSERT INTO products (user_id, name, category, price, stock, barcode, cost_price)
                VALUES (%s,%s,%s,%s,%s,%s,%s)""",
-            (user_id, name.strip(), category.strip() or "General", cost_price, price, stock, barcode),
+            (user_id, name.strip(), category.strip() or "General", price, stock, barcode, cost_price),
         )
         get_products.clear()
         return True, "Product added."
@@ -384,11 +411,20 @@ def update_stock(product_id: int, new_stock: int):
 update_stock = _with_retry(update_stock)
 
 
+def update_cost_price(product_id: int, new_cost_price: float):
+    """Update just the cost price of an existing product."""
+    conn, cur = _cursor()
+    cur.execute("UPDATE products SET cost_price=%s WHERE id=%s", (new_cost_price, product_id))
+    cur.close()
+    get_products.clear()
+update_cost_price = _with_retry(update_cost_price)
+
+
 def bulk_upsert_products(user_id: int, df: pd.DataFrame) -> tuple[int, int, list]:
     """
     Insert products from an uploaded CSV/Excel dataframe.
     Column names are normalized (case-insensitive) to:
-    name, category, price, stock, barcode.
+    name, category, price, cost_price, stock, barcode.
 
     Any image/photo column in the uploaded sheet is ignored — the app
     doesn't show product pictures.
@@ -402,10 +438,10 @@ def bulk_upsert_products(user_id: int, df: pd.DataFrame) -> tuple[int, int, list
             col_map[col] = "name"
         elif key in ("category", "cat"):
             col_map[col] = "category"
-        elif key in ("costprice", "cost", "purchaseprice", "buyprice"):
-            col_map[col] = "cost_price"
-        elif key in ("price", "unitprice", "mrp", "sellingprice"):
+        elif key in ("price", "unitprice", "mrp"):
             col_map[col] = "price"
+        elif key in ("costprice", "cost", "purchaseprice", "cp"):
+            col_map[col] = "cost_price"
         elif key in ("stock", "quantity", "qty"):
             col_map[col] = "stock"
         elif key in ("barcode", "sku", "code"):
@@ -421,13 +457,13 @@ def bulk_upsert_products(user_id: int, df: pd.DataFrame) -> tuple[int, int, list
             errors.append(f"Row {i+2}: missing product name — skipped.")
             continue
         try:
-            cost_price = float(row.get("cost_price", 0) or 0)
-        except (ValueError, TypeError):
-            cost_price = 0.0
-        try:
             price = float(row.get("price", 0) or 0)
         except (ValueError, TypeError):
             price = 0.0
+        try:
+            cost_price = float(row.get("cost_price", 0) or 0)
+        except (ValueError, TypeError):
+            cost_price = 0.0
         try:
             stock = int(float(row.get("stock", 0) or 0))
         except (ValueError, TypeError):
@@ -438,9 +474,9 @@ def bulk_upsert_products(user_id: int, df: pd.DataFrame) -> tuple[int, int, list
 
         try:
             cur.execute(
-                """INSERT INTO products (user_id, name, category, cost_price, price, stock, barcode)
+                """INSERT INTO products (user_id, name, category, price, stock, barcode, cost_price)
                    VALUES (%s,%s,%s,%s,%s,%s,%s)""",
-                (user_id, name, category, cost_price, price, stock, barcode),
+                (user_id, name, category, price, stock, barcode, cost_price),
             )
             success += 1
         except pymysql.err.IntegrityError:
@@ -475,6 +511,12 @@ def get_sales(user_id: int) -> pd.DataFrame:
 
 
 def record_sale(user_id: int, product_id: int, quantity: int, unit_price: float):
+    """
+    Record a sale and decrement stock. The product's current cost_price is
+    snapshotted into sales.cost_price at the moment of the sale, so profit
+    for this sale (total_price - cost_price * quantity) stays accurate even
+    if the product's cost price is edited afterwards.
+    """
     conn, cur = _cursor()
     try:
         cur.execute("SELECT stock, cost_price FROM products WHERE id=%s", (product_id,))
@@ -482,9 +524,10 @@ def record_sale(user_id: int, product_id: int, quantity: int, unit_price: float)
         if not row or row["stock"] < quantity:
             return False, "Not enough stock to complete this sale."
         total = round(float(unit_price) * quantity, 2)
-        cost_price = float(row.get("cost_price") or 0)
+        cost_price = float(row["cost_price"] or 0)
         cur.execute(
-            "INSERT INTO sales (user_id, product_id, quantity, total_price, cost_price) VALUES (%s,%s,%s,%s,%s)",
+            """INSERT INTO sales (user_id, product_id, quantity, total_price, cost_price)
+               VALUES (%s,%s,%s,%s,%s)""",
             (user_id, product_id, quantity, total, cost_price),
         )
         cur.execute(
@@ -497,5 +540,3 @@ def record_sale(user_id: int, product_id: int, quantity: int, unit_price: float)
         return False, f"Could not record sale: {e}"
     finally:
         cur.close()
-
-
