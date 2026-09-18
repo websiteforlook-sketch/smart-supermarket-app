@@ -28,28 +28,30 @@ TRANSLATIONS = {
     "nav_products": {"en": "Products", "gu": "ઉત્પાદનો"},
     "nav_sales": {"en": "Sales", "gu": "વેચાણ"},
     "nav_reports": {"en": "Reports", "gu": "અહેવાલો"},
-    "nav_profile": {"en": "My Profile", "gu": "મારી પ્રોફાઇલ"},
+    "nav_profile": {"en": "Profile", "gu": "પ્રોફાઇલ"},
     "log_out": {"en": "Log out", "gu": "લોગ આઉટ"},
     "signed_in_as": {"en": "Signed in as {name}", "gu": "{name} તરીકે સાઇન ઇન"},
 
     # ---- Auth: shared ----
     "hero_eyebrow": {"en": "Built for shops that move fast", "gu": "ઝડપી દુકાનો માટે બનાવેલ"},
-    "hero_script": {"en": "Everything your supermarket needs,", "gu": "તમારી સુપરમાર્કેટ માટે જરૂરી બધું,"},
-    "hero_caps": {"en": "in one smart place.", "gu": "એક સ્માર્ટ જગ્યાએ."},
-    "hero_headline": {"en": "Everything your supermarket needs<br/>in one smart place.",
-                       "gu": "તમારી સુપરમાર્કેટ માટે જરૂરી બધું<br/>એક સ્માર્ટ જગ્યાએ."},
-    "hero_sub": {"en": "Manage inventory, record sales, and understand profit and loss — all from one simple dashboard.",
-                 "gu": "ઇન્વેન્ટરી મેનેજ કરો, વેચાણ નોંધો અને નફો-નુકસાન સમજો — એક સરળ ડેશબોર્ડમાંથી."},
-    "hero_cta": {"en": "Create / Log in account", "gu": "ખાતું બનાવો / લોગ ઇન કરો"},
+    "hero_script": {"en": "Stock smart,", "gu": "સ્માર્ટ સ્ટોક,"},
+    "hero_caps": {"en": "sell smoother.", "gu": "સરળ વેચાણ."},
+    "hero_headline": {"en": "Stock smart,<br/>sell smoother.",
+                       "gu": "સ્માર્ટ સ્ટોક,<br/>સરળ વેચાણ."},
+    "hero_sub": {"en": "One dashboard for stock, sales, and barcodes — "
+                       "built to feel as simple as writing it in a ledger.",
+                 "gu": "સ્ટોક, વેચાણ અને બારકોડ માટે એક જ ડેશબોર્ડ — "
+                       "ચોપડામાં લખવા જેટલું સરળ."},
+    "hero_cta": {"en": "Create / Log in Account", "gu": "ખાતું બનાવો / લોગ ઇન કરો"},
     "feat_stock_title": {"en": "Live stock", "gu": "લાઇવ સ્ટોક"},
     "feat_stock_desc": {"en": "Know what's in and out, down to the unit.",
                          "gu": "શું અંદર-બહાર છે, ચોક્કસ સંખ્યામાં જાણો."},
-    "feat_sales_title": {"en": "Sales tracking", "gu": "વેચાણ ટ્રેકિંગ"},
-    "feat_sales_desc": {"en": "Record every sale and keep stock updated automatically.",
-                         "gu": "દરેક વેચાણ નોંધો અને સ્ટોક આપમેળે અપડેટ રાખો."},
-    "feat_profit_title": {"en": "Profit & loss", "gu": "નફો અને નુકસાન"},
-    "feat_profit_desc": {"en": "Add cost prices to see daily profit and loss clearly.",
-                          "gu": "કિંમત ઉમેરો અને દૈનિક નફો-નુકસાન સ્પષ્ટ જુઓ."},
+    "feat_barcode_title": {"en": "Barcode ready", "gu": "બારકોડ તૈયાર"},
+    "feat_barcode_desc": {"en": "Scan to restock or add new items in seconds.",
+                           "gu": "થોડી સેકન્ડમાં સ્કેન કરી સ્ટોક ભરો અથવા નવી વસ્તુ ઉમેરો."},
+    "feat_dash_title": {"en": "Clear dashboards", "gu": "સ્પષ્ટ ડેશબોર્ડ"},
+    "feat_dash_desc": {"en": "See what's selling without digging for it.",
+                        "gu": "શું વેચાઈ રહ્યું છે તે સહેલાઈથી જુઓ."},
     "feat_export_title": {"en": "Export anytime", "gu": "ગમે ત્યારે નિકાસ કરો"},
     "feat_export_desc": {"en": "A clean Excel report, whenever you need one.",
                           "gu": "જ્યારે જરૂર પડે ત્યારે સ્વચ્છ એક્સેલ રિપોર્ટ."},
@@ -102,20 +104,11 @@ TRANSLATIONS = {
     "kpi_stock_value": {"en": "Stock value", "gu": "સ્ટોકનું મૂલ્ય"},
     "kpi_stock_value_sub": {"en": "at current price × qty", "gu": "વર્તમાન કિંમત × જથ્થા પ્રમાણે"},
     "kpi_sales_today": {"en": "Sales today", "gu": "આજનું વેચાણ"},
+    "kpi_profit_today": {"en": "Profit today", "gu": "આજનો નફો"},
+    "kpi_profit_today_sub_pos": {"en": "revenue minus cost", "gu": "આવક બાદ ખર્ચ"},
+    "kpi_profit_today_sub_neg": {"en": "running at a loss today", "gu": "આજે નુકસાનમાં"},
     "kpi_low_stock": {"en": "Low stock alerts", "gu": "ઓછા સ્ટોકની ચેતવણી"},
     "kpi_low_stock_sub": {"en": "5 units or fewer", "gu": "5 કે તેથી ઓછા એકમો"},
-    "kpi_profit_today": {"en": "Profit today", "gu": "આજનો નફો"},
-    "kpi_loss_today": {"en": "Loss today", "gu": "આજનું નુકસાન"},
-    "profit_today_sub": {"en": "from recorded cost prices", "gu": "નોંધાયેલી ખરીદી કિંમત પરથી"},
-    "loss_today_sub": {"en": "cost above selling price", "gu": "ખરીદી કિંમત વેચાણથી વધુ"},
-    "set_cost_price_sub": {"en": "set cost price to calculate", "gu": "ગણતરી માટે ખરીદી કિંમત સેટ કરો"},
-    "dashboard_live": {"en": "LIVE OVERVIEW", "gu": "લાઇવ ઝાંખી"},
-    "profit_loss_title": {"en": "Today's profit & loss", "gu": "આજનો નફો અને નુકસાન"},
-    "sales_today_short": {"en": "Sales", "gu": "વેચાણ"},
-    "profit_today_short": {"en": "Profit", "gu": "નફો"},
-    "loss_today_short": {"en": "Loss", "gu": "નુકસાન"},
-    "profit_loss_note": {"en": "Profit/loss uses the cost price saved when each sale was recorded.", "gu": "નફો/નુકસાન દરેક વેચાણ વખતે સાચવેલી ખરીદી કિંમત પરથી ગણાય છે."},
-    "profit_loss_missing_cost": {"en": "Some sales have no cost price yet. Add cost prices to products and record new sales for accurate profit/loss.", "gu": "કેટલાક વેચાણમાં ખરીદી કિંમત નથી. સાચા નફા/નુકસાન માટે ઉત્પાદનોમાં ખરીદી કિંમત ઉમેરો અને નવા વેચાણ નોંધો."},
     "top_selling": {"en": "Top-selling products", "gu": "સૌથી વધુ વેચાતા ઉત્પાદનો"},
     "stock_by_category": {"en": "Stock by category", "gu": "શ્રેણી પ્રમાણે સ્ટોક"},
     "low_stock_title": {"en": "Low stock — restock soon", "gu": "ઓછો સ્ટોક — ટૂંક સમયમાં ભરો"},
@@ -132,14 +125,17 @@ TRANSLATIONS = {
     "tab_all_products": {"en": "All products", "gu": "બધા ઉત્પાદનો"},
     "product_name": {"en": "Product name", "gu": "ઉત્પાદનનું નામ"},
     "category": {"en": "Category", "gu": "શ્રેણી"},
-    "cost_price_rs": {"en": "Cost price (₹)", "gu": "ખરીદી કિંમત (₹)"},
-    "price_rs": {"en": "Selling price (₹)", "gu": "વેચાણ કિંમત (₹)"},
+    "price_rs": {"en": "Price (₹)", "gu": "કિંમત (₹)"},
+    "cost_price_rs": {"en": "Cost price (₹)", "gu": "ખરીદ કિંમત (₹)"},
     "opening_stock": {"en": "Opening stock", "gu": "શરૂઆતનો સ્ટોક"},
     "barcode_optional": {"en": "Barcode (optional)", "gu": "બારકોડ (વૈકલ્પિક)"},
     "add_product": {"en": "Add product", "gu": "ઉત્પાદન ઉમેરો"},
     "name_required": {"en": "Product name is required.", "gu": "ઉત્પાદનનું નામ જરૂરી છે."},
-    "bulk_instructions": {"en": "Upload a CSV or Excel file with columns: **name, category, cost_price, price, stock, barcode** (cost_price and barcode can be left blank; column names are matched case-insensitively).",
-                           "gu": "આ કોલમ સાથે CSV અથવા Excel ફાઇલ અપલોડ કરો: **name, category, cost_price, price, stock, barcode** (cost_price અને barcode વૈકલ્પિક છે)."},
+    "bulk_instructions": {"en": "Upload a CSV or Excel file with columns: **name, category, price, "
+                                 "cost_price, stock, barcode** (cost_price and barcode are optional; "
+                                 "column names are matched case-insensitively).",
+                           "gu": "આ કોલમ સાથે CSV અથવા Excel ફાઇલ અપલોડ કરો: **name, category, price, "
+                                 "cost_price, stock, barcode** (cost_price અને barcode વૈકલ્પિક છે)."},
     "choose_file": {"en": "Choose file", "gu": "ફાઇલ પસંદ કરો"},
     "import_products": {"en": "Import these products", "gu": "આ ઉત્પાદનો આયાત કરો"},
     "imported_summary": {"en": "Imported {success} product(s). Skipped {skipped}.",
@@ -222,6 +218,16 @@ TRANSLATIONS = {
     "nothing_to_export": {"en": "Nothing to export yet.", "gu": "હજુ નિકાસ કરવા માટે કંઈ નથી."},
     "download_excel": {"en": "Download Excel report", "gu": "Excel રિપોર્ટ ડાઉનલોડ કરો"},
 
+    # ---- Profile page ----
+    "page_profile": {"en": "Profile", "gu": "પ્રોફાઇલ"},
+    "my_profile": {"en": "My Profile", "gu": "મારી પ્રોફાઇલ"},
+    "edit_profile_details": {"en": "Edit Profile Details", "gu": "પ્રોફાઇલ વિગતો સંપાદિત કરો"},
+    "mobile_number": {"en": "Mobile Number", "gu": "મોબાઇલ નંબર"},
+    "email": {"en": "Email", "gu": "ઇમેઇલ"},
+    "upload_profile_photo": {"en": "Upload Profile Photo", "gu": "પ્રોફાઇલ ફોટો અપલોડ કરો"},
+    "save_changes": {"en": "Save Changes", "gu": "ફેરફારો સાચવો"},
+    "profile_updated": {"en": "Profile updated successfully.", "gu": "પ્રોફાઇલ સફળતાપૂર્વક અપડેટ થયું."},
+
     # ---- Table column headers ----
     "col_name": {"en": "Name", "gu": "નામ"},
     "col_category": {"en": "Category", "gu": "શ્રેણી"},
@@ -231,16 +237,6 @@ TRANSLATIONS = {
     "col_qty": {"en": "Qty", "gu": "જથ્થો"},
     "col_total": {"en": "Total (₹)", "gu": "કુલ (₹)"},
     "col_date": {"en": "Date", "gu": "તારીખ"},
-
-    # ---- Profile ----
-    "page_profile": {"en": "My Profile", "gu": "મારી પ્રોફાઇલ"},
-    "my_profile": {"en": "My Profile", "gu": "મારી પ્રોફાઇલ"},
-    "edit_profile": {"en": "Edit profile details", "gu": "પ્રોફાઇલ વિગતો સંપાદિત કરો"},
-    "mobile_number": {"en": "Mobile number", "gu": "મોબાઇલ નંબર"},
-    "email": {"en": "Email", "gu": "ઇમેઇલ"},
-    "upload_profile_photo": {"en": "Upload profile photo", "gu": "પ્રોફાઇલ ફોટો અપલોડ કરો"},
-    "save_changes": {"en": "Save changes", "gu": "ફેરફારો સાચવો"},
-    "profile_not_found": {"en": "Profile could not be loaded.", "gu": "પ્રોફાઇલ લોડ થઈ શકી નથી."},
 
     # ---- Page subtitles (brand header tag) — sentence case for the quieter, editorial header ----
     "page_dashboard": {"en": "Dashboard", "gu": "ડેશબોર્ડ"},
@@ -280,5 +276,3 @@ def render_lang_toggle(key_suffix: str = ""):
     if new_lang != current:
         st.session_state.lang = new_lang
         st.rerun()
-
-
