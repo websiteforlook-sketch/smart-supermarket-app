@@ -41,6 +41,19 @@ session_state value before that widget is created. The Remove tab now uses
 a separate plain flag ("_reset_remove_confirm") that is applied before the
 checkbox widget exists on the next run, so the checkbox correctly resets to
 unchecked after a successful removal without crashing.
+
+Cost price editing (Products → All products → Edit)
+------------------------------------------------------
+Previously there was no way to fix a product's cost_price after it was
+created — the Edit expander only exposed Stock. This mattered a lot for
+bulk-uploaded products: db.bulk_upsert_products() only recognizes a
+cost_price column if the uploaded sheet has one named cost_price/cost/
+purchase_price/cp (case-insensitive); anything else imports with
+cost_price=0. With cost_price stuck at 0, profit always equals revenue
+exactly (profit = total_price - 0), so "Profit today" never differs from
+"Sales today" and a real loss day can never be detected. The Edit expander
+now also has a Cost price input, wired to the existing (previously unused)
+db.update_cost_price().
 """
 import io
 import base64
@@ -617,10 +630,24 @@ def page_products(user_id):
                                         i18n.t("stock"), min_value=0, step=1,
                                         value=int(prod["stock"]), key=f"stock_{prod['id']}",
                                     )
+                                    # Cost price editing — previously there was no way to
+                                    # correct a product's cost_price after creation (e.g.
+                                    # bulk-uploaded products whose sheet had no cost_price
+                                    # column, which import as cost_price=0). db.py already
+                                    # had update_cost_price(); it just wasn't wired into any
+                                    # UI. Without a real cost price, profit always equals
+                                    # sales exactly (profit = total_price - 0), so this field
+                                    # is what actually lets profit/loss reporting mean anything.
+                                    new_cost_price = st.number_input(
+                                        i18n.t("cost_price_rs"), min_value=0.0, step=1.0, format="%.2f",
+                                        value=float(prod["cost_price"]), key=f"cost_{prod['id']}",
+                                    )
                                     if st.button(i18n.t("save"), key=f"save_{prod['id']}", type="primary",
                                                  use_container_width=True):
                                         if new_stock != int(prod["stock"]):
                                             db.update_stock(prod["id"], new_stock)
+                                        if new_cost_price != float(prod["cost_price"]):
+                                            db.update_cost_price(prod["id"], new_cost_price)
                                         st.success(i18n.t("product_updated", name=prod['name']))
                                         st.rerun()
 
