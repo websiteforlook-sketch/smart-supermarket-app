@@ -740,31 +740,47 @@ def main():
 
     with st.sidebar:
         # Fetch the shopkeeper's profile so we can show their photo (if any)
-        # as a small round avatar right after the SmartMart wordmark. This is
-        # the same profile_photo bytes set on the Profile page.
+        # as a larger round avatar next to the shop name / owner name. This
+        # is the same profile_photo bytes set on the Profile page.
         profile = db.get_profile(st.session_state.user["id"])
         avatar_html = ""
         if profile and profile.get("profile_photo"):
             photo_b64 = base64.b64encode(profile["profile_photo"]).decode()
-            avatar_html = f'<img class="sidebar-avatar" src="data:image/png;base64,{photo_b64}" />'
+            avatar_html = f'<img class="sidebar-avatar-lg" src="data:image/png;base64,{photo_b64}" />'
+        else:
+            avatar_html = '<div class="sidebar-avatar-lg sidebar-avatar-placeholder">🏪</div>'
 
         st.markdown(
             '<div class="sidebar-brand">'
             '<div class="sidebar-brand-mark">S</div>'
             '<div class="sidebar-brand-name">SmartMart</div>'
-            f'{avatar_html}'
             '</div>',
             unsafe_allow_html=True,
         )
         shop = st.session_state.user.get("shop_name") or ""
         owner = st.session_state.user.get("owner_name") or st.session_state.user["username"]
         if shop:
-            st.markdown(f'<div class="sidebar-shop">{shop}</div>'
-                        f'<div class="sidebar-owner">{owner}</div>', unsafe_allow_html=True)
+            st.markdown(
+                '<div class="sidebar-profile-row">'
+                f'{avatar_html}'
+                '<div>'
+                f'<div class="sidebar-shop">{shop}</div>'
+                f'<div class="sidebar-owner">{owner}</div>'
+                '</div>'
+                '</div>',
+                unsafe_allow_html=True,
+            )
         else:
-            st.markdown(f'<div class="sidebar-owner">'
-                        f'{i18n.t("signed_in_as", name=st.session_state.user["username"])}</div>',
-                        unsafe_allow_html=True)
+            st.markdown(
+                '<div class="sidebar-profile-row">'
+                f'{avatar_html}'
+                '<div>'
+                f'<div class="sidebar-owner">'
+                f'{i18n.t("signed_in_as", name=st.session_state.user["username"])}</div>'
+                '</div>'
+                '</div>',
+                unsafe_allow_html=True,
+            )
 
         st.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
         i18n.render_lang_toggle(key_suffix="sidebar")
