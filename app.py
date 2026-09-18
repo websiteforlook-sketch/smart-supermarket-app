@@ -14,9 +14,12 @@ Note on profile photos
 -----------------------
 Unlike product images, the shopkeeper's own profile photo IS supported
 (uploaded on the new Profile page and stored as bytes in users.profile_photo).
-This is unrelated to the old, removed product-photo feature.
+This is unrelated to the old, removed product-photo feature. The photo is
+also shown as a small round avatar in the sidebar, next to the SmartMart
+wordmark.
 """
 import io
+import base64
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -736,10 +739,20 @@ def main():
         return
 
     with st.sidebar:
+        # Fetch the shopkeeper's profile so we can show their photo (if any)
+        # as a small round avatar right after the SmartMart wordmark. This is
+        # the same profile_photo bytes set on the Profile page.
+        profile = db.get_profile(st.session_state.user["id"])
+        avatar_html = ""
+        if profile and profile.get("profile_photo"):
+            photo_b64 = base64.b64encode(profile["profile_photo"]).decode()
+            avatar_html = f'<img class="sidebar-avatar" src="data:image/png;base64,{photo_b64}" />'
+
         st.markdown(
             '<div class="sidebar-brand">'
             '<div class="sidebar-brand-mark">S</div>'
             '<div class="sidebar-brand-name">SmartMart</div>'
+            f'{avatar_html}'
             '</div>',
             unsafe_allow_html=True,
         )
