@@ -45,6 +45,12 @@ v7 additions
 - `html { scroll-behavior: smooth; }` + a `.hero-cta-btn` style so the auth
   hero's "Create / Log in Account" button can link to `#auth-section` and
   glide the page down to the login/signup card instead of jumping instantly.
+
+v8 additions
+------------
+- `.sidebar-avatar` — a small round profile-photo avatar shown in the
+  sidebar brand row, right after the "SmartMart" wordmark, when the
+  shopkeeper has uploaded a profile photo on the Profile page.
 """
 import streamlit as st
 
@@ -195,6 +201,20 @@ section[data-testid="stSidebar"] .stRadio label {
     font-size: 1.35rem;
     letter-spacing: -0.01em;
     color: #fff !important;
+}
+/* Small round profile-photo avatar, shown right after the SmartMart
+   wordmark in the sidebar brand row (only rendered when the shopkeeper
+   has uploaded a profile photo on the Profile page). margin-left: auto
+   pushes it to the far right of the flex row. */
+.sidebar-avatar {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-left: auto;
+    border: 2px solid rgba(255,255,255,0.55);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
 }
 .sidebar-shop {
     font-family: 'Poppins', sans-serif;
