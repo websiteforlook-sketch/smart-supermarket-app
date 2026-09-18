@@ -51,6 +51,16 @@ v8 additions
 - `.sidebar-avatar` — a small round profile-photo avatar shown in the
   sidebar brand row, right after the "SmartMart" wordmark, when the
   shopkeeper has uploaded a profile photo on the Profile page.
+
+v9 additions
+------------
+- `.kpi-card-link` — kpi_card_html() can now optionally wrap a KPI card in
+  an <a> tag so a card (e.g. "Low stock alerts") can smooth-scroll to an
+  anchor elsewhere on the page (e.g. "#low-stock-section") when clicked,
+  reusing the same `html { scroll-behavior: smooth; }` behavior already set
+  up for the auth-screen hero CTA. The link styling strips the underline/
+  color change so a linked KPI card still looks identical to a plain one,
+  just with a pointer cursor.
 """
 import streamlit as st
 
@@ -369,6 +379,20 @@ div[class*="st-key-kpi_row"] { margin-bottom: 12px; border: none; }
     letter-spacing: -0.01em;
 }
 .kpi-card .kpi-sub { font-size: 0.8rem; color: var(--muted); margin-top: 6px; font-weight: 500; }
+
+/* Wrapping <a> used when a KPI card is clickable (e.g. "Low stock alerts"
+   scrolling down to the low-stock panel). Strips normal link styling so
+   the card looks identical to a non-linked one, just with a pointer
+   cursor and the same hover lift (inherited from .kpi-card:hover above,
+   since the transform/shadow rules still target .kpi-card itself). */
+.kpi-card-link {
+    text-decoration: none !important;
+    color: inherit !important;
+    display: block;
+    height: 100%;
+    cursor: pointer;
+}
+.kpi-card-link:hover { text-decoration: none !important; color: inherit !important; }
 
 /* ---------- Generic content panels ---------- */
 div[class*="st-key-panel_"] {
@@ -770,10 +794,18 @@ _KPI_ACCENTS = {
 }
 
 
-def kpi_card_html(label: str, value: str, sub: str = "", icon: str = "", accent: str = "primary") -> str:
+def kpi_card_html(label: str, value: str, sub: str = "", icon: str = "", accent: str = "primary",
+                   link: str | None = None) -> str:
+    """
+    Build one KPI card. If `link` is given (e.g. "#low-stock-section"), the
+    whole card is wrapped in an <a href="..."> so clicking it navigates to
+    (and, thanks to `html { scroll-behavior: smooth; }`, smoothly scrolls
+    to) that anchor elsewhere on the page. The .kpi-card-link CSS strips
+    normal link styling so a linked card looks identical to a plain one.
+    """
     color, soft = _KPI_ACCENTS.get(accent, _KPI_ACCENTS["primary"])
     icon_html = f'<div class="kpi-icon">{icon}</div>' if icon else ""
-    return f"""
+    card = f"""
     <div class="kpi-card" style="--kpi-accent:{color}; --kpi-accent-soft:{soft};">
         {icon_html}
         <div class="kpi-label">{label}</div>
@@ -781,6 +813,9 @@ def kpi_card_html(label: str, value: str, sub: str = "", icon: str = "", accent:
         <div class="kpi-sub">{sub}</div>
     </div>
     """
+    if link:
+        return f'<a href="{link}" class="kpi-card-link">{card}</a>'
+    return card
 
 
 def product_card_html(name: str, category: str, price: float, stock_badge: str) -> str:
