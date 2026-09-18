@@ -39,6 +39,12 @@ Type:
 Shapes: 12–16px radius, soft colored shadows instead of hairlines, chip-style
 badges with tinted backgrounds. Motion stays minimal — a gentle fade/slide
 on load, hover lifts on cards and buttons — nothing looping or distracting.
+
+v7 additions
+------------
+- `html { scroll-behavior: smooth; }` + a `.hero-cta-btn` style so the auth
+  hero's "Create / Log in Account" button can link to `#auth-section` and
+  glide the page down to the login/signup card instead of jumping instantly.
 """
 import streamlit as st
 
@@ -88,6 +94,7 @@ CSS = """
 
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+    html { scroll-behavior: auto !important; }
 }
 
 html { scroll-behavior: smooth; }
@@ -137,6 +144,29 @@ h1, h2, h3 {
     border: none; border-radius: 4px;
 }
 .squiggle-lime { background: var(--border); }
+
+/* ---------- Hero call-to-action button (auth screen) ---------- */
+.hero-cta-btn {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 14px 32px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6366F1, #EC4899);
+    color: #fff !important;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 0.98rem;
+    text-decoration: none !important;
+    box-shadow: 0 10px 24px rgba(99,102,241,0.32);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    cursor: pointer;
+    border: none;
+}
+.hero-cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(99,102,241,0.4);
+    color: #fff !important;
+}
 
 /* ---------- Sidebar ---------- */
 section[data-testid="stSidebar"] {
@@ -265,9 +295,6 @@ section[data-testid="stSidebar"] .stButton > button div {
 /* ---------- KPI row ---------- */
 div[class*="st-key-kpi_row"] > div { gap: 16px; background: transparent; }
 div[class*="st-key-kpi_row"] { margin-bottom: 12px; border: none; }
-@media (max-width: 1050px) {
-    div[class*="st-key-kpi_row"] .stColumn { min-width: 30% !important; }
-}
 .kpi-card {
     background: var(--card);
     border: 1px solid var(--border);
@@ -489,7 +516,12 @@ div[class*="st-key-link_"] .stButton > button:hover { background: transparent !i
 }
 .hero-sub {
     color: var(--muted); font-size: 1.02rem; line-height: 1.65;
-    max-width: 480px; margin: 0 auto 46px auto; position: relative; font-weight: 500;
+    max-width: 480px; margin: 0 auto 32px auto; position: relative; font-weight: 500;
+}
+.hero-cta-wrap {
+    position: relative;
+    margin: 0 auto 46px auto;
+    text-align: center;
 }
 .hero-grid {
     display: flex; flex-wrap: wrap; justify-content: center; gap: 16px;
@@ -518,6 +550,7 @@ div[class*="st-key-auth_wrap"] {
     background: transparent;
     border: none;
     box-shadow: none;
+    scroll-margin-top: 40px;
 }
 div[class*="st-key-auth_wrap"] h3 {
     margin-bottom: 8px; font-size: 1.7rem;
@@ -594,14 +627,6 @@ div[class*="st-key-auth_wrap"] .stColumns { margin-top: 20px; }
     margin-top: 18px; position: relative; max-width: 440px;
 }
 
-.profile-avatar {
-     width: 190px; height: 190px; border-radius: 24px;
-     display: flex; align-items: center; justify-content: center;
-     background: linear-gradient(135deg, #6366F1, #EC4899); color: #fff;
-     font-family: 'Poppins', sans-serif; font-size: 4rem; font-weight: 700;
-     margin-bottom: 16px; box-shadow: 0 12px 30px rgba(99,102,241,.2);
- }
-
 /* ---------- Product card grid — text only, no thumbnails ---------- */
 .product-card {
     background: var(--card);
@@ -648,6 +673,21 @@ div[class*="st-key-auth_wrap"] .stColumns { margin-top: 20px; }
     text-transform: uppercase; letter-spacing: 0.06em; color: var(--primary-dark);
 }
 .mini-name { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 1.02rem; color: var(--ink); }
+
+/* ---------- Profile page ---------- */
+.profile-photo-wrap {
+    display: flex; justify-content: center; margin-bottom: 20px;
+}
+.profile-photo-wrap img {
+    border-radius: 50%;
+    border: 4px solid var(--primary-soft);
+    box-shadow: 0 6px 18px rgba(99,102,241,0.2);
+    object-fit: cover;
+}
+.profile-username {
+    text-align: center; color: var(--muted); font-size: 0.85rem;
+    font-weight: 600; margin-bottom: 24px;
+}
 
 /* ---------- Language toggle ---------- */
 div[data-testid="stRadio"] div[role="radiogroup"] {
@@ -746,5 +786,3 @@ def stock_badge(stock: int) -> str:
     elif stock <= 5:
         return f'<span class="badge badge-low">Low · {stock} left</span>'
     return f'<span class="badge badge-in">In stock · {stock}</span>'
-
-
