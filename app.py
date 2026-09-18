@@ -29,6 +29,18 @@ Dashboard KPI updates
   smooth-scrolls the page down to the "Low stock — restock soon" panel
   (id="low-stock-section"), using the same `html { scroll-behavior: smooth; }`
   CSS already used for the auth-screen hero CTA.
+
+Remove-product fix
+-------------------
+Removing a product used to crash with
+StreamlitWidgetAlreadyInstantiatedError right after a successful delete,
+because the old code reset st.session_state["remove_confirm"] (the
+checkbox's own widget key) *after* that checkbox had already been
+instantiated in the same run — Streamlit only allows setting a widget's
+session_state value before that widget is created. The Remove tab now uses
+a separate plain flag ("_reset_remove_confirm") that is applied before the
+checkbox widget exists on the next run, so the checkbox correctly resets to
+unchecked after a successful removal without crashing.
 """
 import io
 import base64
@@ -511,6 +523,17 @@ def page_products(user_id):
 
     with tab_remove:
         with panel("prod_remove"):
+            # Apply any pending reset of the confirm checkbox BEFORE that
+            # checkbox widget is instantiated below. Streamlit raises
+            # StreamlitWidgetAlreadyInstantiatedError if you assign to
+            # st.session_state[<a widget's own key>] *after* that widget has
+            # already been created in the current script run — which is
+            # exactly what the old code did right after st.rerun(). Using a
+            # separate plain flag here, applied before the checkbox exists,
+            # avoids that entirely.
+            if st.session_state.pop("_reset_remove_confirm", False):
+                st.session_state["remove_confirm"] = False
+
             products_all = db.get_products(user_id)
             if products_all.empty:
                 empty_state("—", i18n.t("no_products_add_one"))
@@ -530,7 +553,7 @@ def page_products(user_id):
                     ok, msg = db.delete_product(product_id_to_remove)
                     if ok:
                         st.success(msg)
-                        st.session_state["remove_confirm"] = False
+                        st.session_state["_reset_remove_confirm"] = True
                         st.rerun()
                     else:
                         st.error(msg)
