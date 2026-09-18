@@ -17,6 +17,18 @@ Unlike product images, the shopkeeper's own profile photo IS supported
 This is unrelated to the old, removed product-photo feature. The photo is
 also shown as a small round avatar in the sidebar, next to the SmartMart
 wordmark.
+
+Dashboard KPI updates
+----------------------
+- The "Profit today" KPI now relabels itself to "Loss today" (with the
+  matching translated string) when today_profit is negative, instead of
+  just tinting the same "Profit today" label red. The displayed number is
+  the absolute value of the loss so it doesn't show a confusing double
+  negative like "Loss today: -₹120".
+- The "Low stock alerts" KPI card is now a clickable anchor link that
+  smooth-scrolls the page down to the "Low stock — restock soon" panel
+  (id="low-stock-section"), using the same `html { scroll-behavior: smooth; }`
+  CSS already used for the auth-screen hero CTA.
 """
 import io
 import base64
@@ -353,24 +365,43 @@ def page_dashboard(user_id):
             )
             today_profit = today_sales - today_cost
 
+    # The 4th KPI card flips between "Profit today" and "Loss today" — not
+    # just a red tint on the same "Profit today" label — whenever
+    # today_profit goes negative. The displayed amount is abs(today_profit)
+    # so a loss reads as "Loss today: ₹120", not "Profit today: -₹120".
+    if today_profit >= 0:
+        profit_label = i18n.t("kpi_profit_today")
+        profit_value = f"₹{today_profit:,.0f}"
+        profit_sub = i18n.t("kpi_profit_today_sub_pos")
+        profit_icon = "📈"
+        profit_accent = "success"
+    else:
+        profit_label = i18n.t("kpi_loss_today")
+        profit_value = f"₹{abs(today_profit):,.0f}"
+        profit_sub = i18n.t("kpi_profit_today_sub_neg")
+        profit_icon = "📉"
+        profit_accent = "danger"
+
     with st.container(key="kpi_row"):
         cols = st.columns(5)
+        # Each tuple's last element is an optional anchor link the card
+        # should scroll to when clicked (see styling.kpi_card_html). Only
+        # the "Low stock alerts" card uses this, linking down to the
+        # low-stock panel's id="low-stock-section" anchor below.
         kpis = [
-            (i18n.t("kpi_products"), f"{total_products}", i18n.t("kpi_products_sub"), "📦", "primary"),
-            (i18n.t("kpi_stock_value"), f"₹{stock_value:,.0f}", i18n.t("kpi_stock_value_sub"), "💰", "violet"),
-            (i18n.t("kpi_sales_today"), f"₹{today_sales:,.0f}", today.strftime("%d %b %Y"), "🛒", "success"),
-            (
-                i18n.t("kpi_profit_today"),
-                f"₹{today_profit:,.0f}",
-                i18n.t("kpi_profit_today_sub_pos") if today_profit >= 0 else i18n.t("kpi_profit_today_sub_neg"),
-                "📈" if today_profit >= 0 else "📉",
-                "success" if today_profit >= 0 else "danger",
-            ),
-            (i18n.t("kpi_low_stock"), f"{low_stock_count}", i18n.t("kpi_low_stock_sub"), "⚠️", "warning"),
+            (i18n.t("kpi_products"), f"{total_products}", i18n.t("kpi_products_sub"), "📦", "primary", None),
+            (i18n.t("kpi_stock_value"), f"₹{stock_value:,.0f}", i18n.t("kpi_stock_value_sub"), "💰", "violet", None),
+            (i18n.t("kpi_sales_today"), f"₹{today_sales:,.0f}", today.strftime("%d %b %Y"), "🛒", "success", None),
+            (profit_label, profit_value, profit_sub, profit_icon, profit_accent, None),
+            (i18n.t("kpi_low_stock"), f"{low_stock_count}", i18n.t("kpi_low_stock_sub"), "⚠️", "warning",
+             "#low-stock-section"),
         ]
-        for c, (label, value, sub, icon, accent) in zip(cols, kpis):
+        for c, (label, value, sub, icon, accent, link) in zip(cols, kpis):
             with c:
-                st.markdown(styling.kpi_card_html(label, value, sub, icon, accent), unsafe_allow_html=True)
+                st.markdown(
+                    styling.kpi_card_html(label, value, sub, icon, accent, link=link),
+                    unsafe_allow_html=True,
+                )
 
     c1, c2 = st.columns(2)
     with c1:
@@ -403,6 +434,14 @@ def page_dashboard(user_id):
                 fig.patch.set_facecolor("#FFFFFF")
                 st.pyplot(fig, use_container_width=True)
 
+    # Anchor target for the "Low stock alerts" KPI card above. The
+    # scroll-margin-top keeps the panel title from landing flush against
+    # the browser's top edge after the smooth scroll (html { scroll-
+    # behavior: smooth; } is set globally in styling.py).
+    st.markdown(
+        '<div id="low-stock-section" style="scroll-margin-top: 90px;"></div>',
+        unsafe_allow_html=True,
+    )
     with panel("dash_low_stock"):
         st.markdown(f'<div class="panel-title">⚠️ {i18n.t("low_stock_title")}</div>', unsafe_allow_html=True)
         if products.empty or low_stock_count == 0:
