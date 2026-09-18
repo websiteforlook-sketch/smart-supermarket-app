@@ -9,6 +9,12 @@ were removed from this app entirely. Products are identified by name,
 category, price and stock only. If the `products` table in an older
 deployment still has an `image_url` column, it is simply ignored — nothing
 reads or writes it.
+
+Note on profile photos
+-----------------------
+Unlike product images, the shopkeeper's own profile photo IS supported
+(uploaded on the new Profile page and stored as bytes in users.profile_photo).
+This is unrelated to the old, removed product-photo feature.
 """
 import io
 from datetime import datetime
@@ -117,26 +123,26 @@ def _auth_hero():
             <div class="hero-mid">
                 <div class="hero-script">{i18n.t("hero_script")}</div>
                 <div class="hero-headline">{i18n.t("hero_caps")}</div>
-                <div class="hero-sub">{i18n.t("hero_sub")}</div>
-                <a class="hero-cta" href="#login-section">{i18n.t("hero_cta")} <span>↓</span></a>
+                <div class="hero-sub">
+                    {i18n.t("hero_sub")}
+                </div>
+                <div style="margin-bottom:42px;">
+                    <a href="#auth-section" class="hero-cta-btn">{i18n.t("hero_cta")}</a>
+                </div>
                 <div class="hero-grid">
                     <div class="hero-feature">
-                        <div class="hero-feature-icon">📦</div>
                         <div class="hero-feature-title">{i18n.t("feat_stock_title")}</div>
                         <div class="hero-feature-desc">{i18n.t("feat_stock_desc")}</div>
                     </div>
                     <div class="hero-feature">
-                        <div class="hero-feature-icon">🧾</div>
-                        <div class="hero-feature-title">{i18n.t("feat_sales_title")}</div>
-                        <div class="hero-feature-desc">{i18n.t("feat_sales_desc")}</div>
+                        <div class="hero-feature-title">{i18n.t("feat_barcode_title")}</div>
+                        <div class="hero-feature-desc">{i18n.t("feat_barcode_desc")}</div>
                     </div>
                     <div class="hero-feature">
-                        <div class="hero-feature-icon">📈</div>
-                        <div class="hero-feature-title">{i18n.t("feat_profit_title")}</div>
-                        <div class="hero-feature-desc">{i18n.t("feat_profit_desc")}</div>
+                        <div class="hero-feature-title">{i18n.t("feat_dash_title")}</div>
+                        <div class="hero-feature-desc">{i18n.t("feat_dash_desc")}</div>
                     </div>
                     <div class="hero-feature">
-                        <div class="hero-feature-icon">📊</div>
                         <div class="hero-feature-title">{i18n.t("feat_export_title")}</div>
                         <div class="hero-feature-desc">{i18n.t("feat_export_desc")}</div>
                     </div>
@@ -159,7 +165,10 @@ def auth_screen():
         unsafe_allow_html=True,
     )
 
-    st.markdown('<div id="login-section"></div>', unsafe_allow_html=True)
+    # Anchor target for the hero "Create / Log in Account" button — clicking
+    # it smooth-scrolls straight down to the login/signup card below
+    # (smooth-scroll behavior is enabled globally in styling.py).
+    st.markdown('<div id="auth-section"></div>', unsafe_allow_html=True)
 
     # Login form sits centered directly on the page below it, no card border
     # around the whole thing — just the form itself gets a light lift.
@@ -294,6 +303,8 @@ def page_dashboard(user_id):
     shop = st.session_state.user.get("shop_name") or ""
     owner = st.session_state.user.get("owner_name") or st.session_state.user["username"]
 
+    # Always compute "now" and "today" in the shop's local time (IST), not
+    # the server's — see the IST constant defined near the top of this file.
     now_ist = datetime.now(IST)
     hour = now_ist.hour
     greeting = i18n.t("good_morning") if hour < 12 else (
@@ -308,7 +319,6 @@ def page_dashboard(user_id):
                     {f'<span class="welcome-shop">— {shop}</span>' if shop else ''}</div>
                 <div class="welcome-sub">{i18n.t("welcome_sub")}</div>
             </div>
-            <div class="welcome-badge">{i18n.t("dashboard_live")}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -321,34 +331,38 @@ def page_dashboard(user_id):
     today = now_ist.date()
     today_sales = 0.0
     today_profit = 0.0
-    today_loss = 0.0
-    known_cost_sales = 0
-
     if not sales.empty:
+        # sold_at is stored as a naive MySQL DATETIME written by
+        # CURRENT_TIMESTAMP, which on TiDB Cloud is in UTC. Localize it to
+        # UTC and convert to IST before comparing against "today" in IST —
+        # otherwise sales made in the evening in India could be compared
+        # against the wrong calendar day.
         sold_at_ist = pd.to_datetime(sales["sold_at"]).dt.tz_localize("UTC").dt.tz_convert(IST)
         today_mask = sold_at_ist.dt.date == today
-        today_rows = sales.loc[today_mask].copy()
-        today_sales = float(today_rows["total_price"].sum())
-        if "cost_price" in today_rows.columns:
-            known = today_rows[today_rows["cost_price"] > 0].copy()
-            known_cost_sales = len(known)
-            if not known.empty:
-                margin = (known["total_price"].astype(float) -
-                          known["cost_price"].astype(float) * known["quantity"].astype(float))
-                today_profit = float(margin[margin > 0].sum())
-                today_loss = float((-margin[margin < 0]).sum())
+        today_sales = float(sales.loc[today_mask, "total_price"].sum())
 
-    profit_sub = i18n.t("profit_today_sub") if known_cost_sales else i18n.t("set_cost_price_sub")
-    loss_sub = i18n.t("loss_today_sub") if known_cost_sales else i18n.t("set_cost_price_sub")
+        # Profit = revenue - cost, using the cost price snapshotted on each
+        # sale row at the time it was recorded (sales.cost_price), so later
+        # edits to a product's cost don't rewrite historical profit.
+        if "cost_price" in sales.columns:
+            today_cost = float(
+                (sales.loc[today_mask, "cost_price"] * sales.loc[today_mask, "quantity"]).sum()
+            )
+            today_profit = today_sales - today_cost
 
     with st.container(key="kpi_row"):
-        cols = st.columns(6)
+        cols = st.columns(5)
         kpis = [
             (i18n.t("kpi_products"), f"{total_products}", i18n.t("kpi_products_sub"), "📦", "primary"),
             (i18n.t("kpi_stock_value"), f"₹{stock_value:,.0f}", i18n.t("kpi_stock_value_sub"), "💰", "violet"),
             (i18n.t("kpi_sales_today"), f"₹{today_sales:,.0f}", today.strftime("%d %b %Y"), "🛒", "success"),
-            (i18n.t("kpi_profit_today"), f"₹{today_profit:,.0f}", profit_sub, "📈", "success"),
-            (i18n.t("kpi_loss_today"), f"₹{today_loss:,.0f}", loss_sub, "📉", "danger"),
+            (
+                i18n.t("kpi_profit_today"),
+                f"₹{today_profit:,.0f}",
+                i18n.t("kpi_profit_today_sub_pos") if today_profit >= 0 else i18n.t("kpi_profit_today_sub_neg"),
+                "📈" if today_profit >= 0 else "📉",
+                "success" if today_profit >= 0 else "danger",
+            ),
             (i18n.t("kpi_low_stock"), f"{low_stock_count}", i18n.t("kpi_low_stock_sub"), "⚠️", "warning"),
         ]
         for c, (label, value, sub, icon, accent) in zip(cols, kpis):
@@ -386,14 +400,6 @@ def page_dashboard(user_id):
                 fig.patch.set_facecolor("#FFFFFF")
                 st.pyplot(fig, use_container_width=True)
 
-    with panel("dash_profit_summary"):
-        st.markdown(f'<div class="panel-title">💼 {i18n.t("profit_loss_title")}</div>', unsafe_allow_html=True)
-        p1, p2, p3 = st.columns(3)
-        p1.metric(i18n.t("sales_today_short"), f"₹{today_sales:,.0f}")
-        p2.metric(i18n.t("profit_today_short"), f"₹{today_profit:,.0f}")
-        p3.metric(i18n.t("loss_today_short"), f"₹{today_loss:,.0f}")
-        st.caption(i18n.t("profit_loss_note") if known_cost_sales else i18n.t("profit_loss_missing_cost"))
-
     with panel("dash_low_stock"):
         st.markdown(f'<div class="panel-title">⚠️ {i18n.t("low_stock_title")}</div>', unsafe_allow_html=True)
         if products.empty or low_stock_count == 0:
@@ -426,8 +432,10 @@ def page_products(user_id):
                     name = st.text_input(i18n.t("product_name"))
                     category = st.text_input(i18n.t("category"), value="General")
                 with c2:
-                    cost_price = st.number_input(i18n.t("cost_price_rs"), min_value=0.0, step=1.0, format="%.2f")
                     price = st.number_input(i18n.t("price_rs"), min_value=0.0, step=1.0, format="%.2f")
+                    cost_price = st.number_input(
+                        i18n.t("cost_price_rs"), min_value=0.0, step=1.0, format="%.2f"
+                    )
                     stock = st.number_input(i18n.t("opening_stock"), min_value=0, step=1)
                 barcode = st.text_input(i18n.t("barcode_optional"))
                 submitted = st.form_submit_button(i18n.t("add_product"), type="primary")
@@ -615,51 +623,6 @@ def page_sales(user_id):
 
 
 # ---------------------------------------------------------------------------
-# Profile page
-# ---------------------------------------------------------------------------
-def page_profile(user_id):
-    styling.brand_header(i18n.t("page_profile"))
-    profile = db.get_user_by_id(user_id)
-    if not profile:
-        st.error(i18n.t("profile_not_found"))
-        return
-
-    left, right = st.columns([0.8, 1.8])
-    with left:
-        with panel("profile_photo"):
-            st.markdown(f'<div class="panel-title">👤 {i18n.t("my_profile")}</div>', unsafe_allow_html=True)
-            if profile.get("profile_photo"):
-                st.image(profile["profile_photo"], width=190)
-            else:
-                initials = (profile.get("owner_name") or profile.get("username") or "S").strip()[:1].upper()
-                st.markdown(f'<div class="profile-avatar">{initials}</div>', unsafe_allow_html=True)
-            st.caption(f'{i18n.t("username")}: {profile.get("username", "")}')
-            photo = st.file_uploader(i18n.t("upload_profile_photo"), type=["png", "jpg", "jpeg"], key="profile_photo_upload")
-            if photo is not None:
-                st.image(photo, width=190)
-
-    with right:
-        with panel("profile_details"):
-            st.markdown(f'<div class="panel-title">✏️ {i18n.t("edit_profile")}</div>', unsafe_allow_html=True)
-            with st.form("profile_form"):
-                shop_name = st.text_input(i18n.t("shop_name"), value=profile.get("shop_name") or "")
-                owner_name = st.text_input(i18n.t("owner_name"), value=profile.get("owner_name") or "")
-                mobile = st.text_input(i18n.t("mobile_number"), value=profile.get("mobile") or "")
-                email = st.text_input(i18n.t("email"), value=profile.get("email") or "")
-                submitted = st.form_submit_button(i18n.t("save_changes"), type="primary", use_container_width=True)
-
-            if submitted:
-                photo_bytes = photo.getvalue() if photo is not None else None
-                photo_mime = photo.type if photo is not None else None
-                ok, msg = db.update_profile(user_id, shop_name, owner_name, mobile, email, photo_bytes, photo_mime)
-                if ok:
-                    st.session_state.user.update({"shop_name": shop_name.strip(), "owner_name": owner_name.strip()})
-                    st.success(msg)
-                    st.rerun()
-                else:
-                    st.error(msg)
-
-# ---------------------------------------------------------------------------
 # Reports page
 # ---------------------------------------------------------------------------
 def build_excel_report(products: pd.DataFrame, sales: pd.DataFrame) -> bytes:
@@ -710,6 +673,58 @@ def page_reports(user_id):
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 type="primary",
             )
+
+
+# ---------------------------------------------------------------------------
+# Profile page
+# ---------------------------------------------------------------------------
+def page_profile(user_id):
+    styling.brand_header(i18n.t("page_profile"))
+
+    profile = db.get_profile(user_id)
+
+    with panel("profile_panel"):
+        st.markdown(f'<div class="panel-title">👤 {i18n.t("my_profile")}</div>', unsafe_allow_html=True)
+
+        pc1, pc2 = st.columns([1, 2.2])
+        with pc1:
+            if profile and profile.get("profile_photo"):
+                st.image(profile["profile_photo"], width=160)
+            else:
+                st.markdown(
+                    '<div class="empty-state" style="padding:20px 6px;">'
+                    '<div class="empty-icon">🏪</div>'
+                    '<div class="empty-text">No photo yet</div></div>',
+                    unsafe_allow_html=True,
+                )
+            photo = st.file_uploader(
+                i18n.t("upload_profile_photo"), type=["png", "jpg", "jpeg"], key="profile_photo_uploader"
+            )
+
+        with pc2:
+            st.markdown(f'<div class="panel-title" style="font-size:1.05rem; margin-bottom:14px;">'
+                        f'{i18n.t("edit_profile_details")}</div>', unsafe_allow_html=True)
+            with st.form("profile_form"):
+                shop_name = st.text_input(i18n.t("shop_name"), value=(profile.get("shop_name") if profile else "") or "")
+                owner_name = st.text_input(i18n.t("owner_name"), value=(profile.get("owner_name") if profile else "") or "")
+                mobile_number = st.text_input(
+                    i18n.t("mobile_number"), value=(profile.get("mobile_number") if profile else "") or ""
+                )
+                email = st.text_input(i18n.t("email"), value=(profile.get("email") if profile else "") or "")
+                submitted = st.form_submit_button(i18n.t("save_changes"), type="primary", use_container_width=True)
+
+            if submitted:
+                photo_bytes = photo.read() if photo is not None else None
+                ok, msg = db.update_profile(
+                    user_id, shop_name, owner_name, mobile_number, email, photo_bytes
+                )
+                if ok:
+                    st.session_state.user["shop_name"] = shop_name.strip()
+                    st.session_state.user["owner_name"] = owner_name.strip()
+                    st.success(i18n.t("profile_updated"))
+                    st.rerun()
+                else:
+                    st.error(msg)
 
 
 # ---------------------------------------------------------------------------
@@ -777,4 +792,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
