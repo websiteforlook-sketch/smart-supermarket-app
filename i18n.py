@@ -224,6 +224,11 @@ TRANSLATIONS = {
                        "gu": "તમારી હાલની ઉત્પાદન યાદી અને વેચાણ ઇતિહાસ સાથે સંપૂર્ણ Excel ફાઇલ ડાઉનલોડ કરો."},
     "nothing_to_export": {"en": "Nothing to export yet.", "gu": "હજુ નિકાસ કરવા માટે કંઈ નથી."},
     "download_excel": {"en": "Download Excel report", "gu": "Excel રિપોર્ટ ડાઉનલોડ કરો"},
+    "download_pdf": {"en": "Download PDF report", "gu": "PDF અહેવાલ ડાઉનલોડ કરો"},
+    "reports_pdf_note": {"en": "The PDF report includes a KPI summary, a top-selling products chart, "
+                                "a stock-by-category chart, low-stock products, and the full sales history.",
+                          "gu": "PDF અહેવાલમાં KPI સારાંશ, સૌથી વધુ વેચાતા ઉત્પાદનોનો ચાર્ટ, શ્રેણી પ્રમાણે "
+                                "સ્ટોકનો ચાર્ટ, ઓછા સ્ટોકવાળા ઉત્પાદનો, અને સંપૂર્ણ વેચાણ ઇતિહાસ શામેલ છે."},
 
     # ---- Profile page ----
     "page_profile": {"en": "Profile", "gu": "પ્રોફાઇલ"},
