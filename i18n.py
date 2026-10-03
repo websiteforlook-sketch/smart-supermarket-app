@@ -59,8 +59,8 @@ TRANSLATIONS = {
     "feat_dash_desc": {"en": "See what's selling without digging for it.",
                         "gu": "શું વેચાઈ રહ્યું છે તે સહેલાઈથી જુઓ."},
     "feat_export_title": {"en": "Export anytime", "gu": "ગમે ત્યારે નિકાસ કરો"},
-    "feat_export_desc": {"en": "A clean Excel report, whenever you need one.",
-                          "gu": "જ્યારે જરૂર પડે ત્યારે સ્વચ્છ એક્સેલ રિપોર્ટ."},
+    "feat_export_desc": {"en": "A clean PDF report, whenever you need one.",
+                          "gu": "જ્યારે જરૂર પડે ત્યારે સ્વચ્છ PDF રિપોર્ટ."},
 
     # ---- Auth: login ----
     "welcome_back": {"en": "Welcome back", "gu": "ફરી સ્વાગત છે"},
@@ -219,16 +219,18 @@ TRANSLATIONS = {
     "sale_recorded": {"en": "Sale recorded — ₹{total}", "gu": "વેચાણ નોંધાયું — ₹{total}"},
 
     # ---- Reports page ----
-    "reports_intro": {"en": "Download a full Excel workbook with your current product catalogue and "
-                             "sales history — one sheet each, styled and ready to share.",
-                       "gu": "તમારી હાલની ઉત્પાદન યાદી અને વેચાણ ઇતિહાસ સાથે સંપૂર્ણ Excel ફાઇલ ડાઉનલોડ કરો."},
+    "reports_intro": {"en": "Download a complete PDF report covering your current product catalogue, "
+                             "sales history, and dashboard-style charts — styled and ready to share.",
+                       "gu": "તમારી ઉત્પાદન સૂચિ, વેચાણ ઇતિહાસ, અને ડેશબોર્ડ-શૈલીના ચાર્ટ સાથેનો સંપૂર્ણ PDF "
+                             "અહેવાલ ડાઉનલોડ કરો."},
     "nothing_to_export": {"en": "Nothing to export yet.", "gu": "હજુ નિકાસ કરવા માટે કંઈ નથી."},
-    "download_excel": {"en": "Download Excel report", "gu": "Excel રિપોર્ટ ડાઉનલોડ કરો"},
     "download_pdf": {"en": "Download PDF report", "gu": "PDF અહેવાલ ડાઉનલોડ કરો"},
-    "reports_pdf_note": {"en": "The PDF report includes a KPI summary, a top-selling products chart, "
-                                "a stock-by-category chart, low-stock products, and the full sales history.",
-                          "gu": "PDF અહેવાલમાં KPI સારાંશ, સૌથી વધુ વેચાતા ઉત્પાદનોનો ચાર્ટ, શ્રેણી પ્રમાણે "
-                                "સ્ટોકનો ચાર્ટ, ઓછા સ્ટોકવાળા ઉત્પાદનો, અને સંપૂર્ણ વેચાણ ઇતિહાસ શામેલ છે."},
+    "reports_pdf_note": {"en": "The PDF report includes a KPI summary, the full product catalogue, a "
+                                "top-selling products chart, a stock-by-category chart, low-stock "
+                                "products, and the full sales history.",
+                          "gu": "PDF અહેવાલમાં KPI સારાંશ, સંપૂર્ણ ઉત્પાદન સૂચિ, સૌથી વધુ વેચાતા ઉત્પાદનોનો "
+                                "ચાર્ટ, શ્રેણી પ્રમાણે સ્ટોકનો ચાર્ટ, ઓછા સ્ટોકવાળા ઉત્પાદનો, અને સંપૂર્ણ "
+                                "વેચાણ ઇતિહાસ શામેલ છે."},
 
     # ---- Profile page ----
     "page_profile": {"en": "Profile", "gu": "પ્રોફાઇલ"},
