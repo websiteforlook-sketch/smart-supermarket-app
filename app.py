@@ -65,9 +65,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch
 from matplotlib.backends.backend_pdf import PdfPages
-from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill, Alignment
-from openpyxl.utils.dataframe import dataframe_to_rows
 
 import db
 import styling
@@ -719,42 +716,16 @@ def page_sales(user_id):
 # ---------------------------------------------------------------------------
 # Reports page
 # ---------------------------------------------------------------------------
-def build_excel_report(products: pd.DataFrame, sales: pd.DataFrame) -> bytes:
-    wb = Workbook()
-    header_fill = PatternFill(start_color="6366F1", end_color="6366F1", fill_type="solid")
-    header_font = Font(color="FFFFFF", bold=True)
-
-    def write_sheet(ws, df, title):
-        ws.title = title
-        for r in dataframe_to_rows(df, index=False, header=True):
-            ws.append(r)
-        for cell in ws[1]:
-            cell.fill = header_fill
-            cell.font = header_font
-            cell.alignment = Alignment(horizontal="center")
-        for col in ws.columns:
-            width = max(12, min(30, max(len(str(c.value)) for c in col) + 2))
-            ws.column_dimensions[col[0].column_letter].width = width
-
-    ws1 = wb.active
-    # image_url is dropped too, in case an older deployment's table still
-    # carries the column — the report should only show real product data.
-    write_sheet(ws1, products.drop(columns=["user_id", "image_url"], errors="ignore"), "Products")
-    ws2 = wb.create_sheet()
-    write_sheet(ws2, sales.drop(columns=["id"], errors="ignore"), "Sales")
-
-    buf = io.BytesIO()
-    wb.save(buf)
-    return buf.getvalue()
-
-
 # ---------------------------------------------------------------------------
-# PDF report — same underlying data as the Excel report, but laid out as a
-# readable, shareable document: a KPI summary page, the two dashboard charts
-# (top sellers bar chart, stock-by-category pie chart), a low-stock table,
-# and the full sales history as paginated tables. Built with Matplotlib
-# (already a dependency for the dashboard charts) via PdfPages, so no new
-# library is needed.
+# PDF report — the single export format (the earlier separate Excel report
+# was removed; everything it used to show — the full product catalogue and
+# the full sales history — is folded into this PDF as tables). Laid out as
+# a readable, shareable document: a KPI summary page, the full product
+# catalogue, the two dashboard charts (top sellers bar chart, stock-by-
+# category pie chart, both deliberately small so they don't dominate a
+# page), a low-stock table, and the full sales history as paginated tables.
+# Built with Matplotlib (already a dependency for the dashboard charts) via
+# PdfPages, so no new library is needed.
 # ---------------------------------------------------------------------------
 _PDF_PAGE_SIZE = (8.27, 11.69)  # A4, inches
 
@@ -858,29 +829,43 @@ def build_pdf_report(products: pd.DataFrame, sales: pd.DataFrame,
         pdf.savefig(fig)
         plt.close(fig)
 
-        # ---- Page 2: Top-selling products (bar chart) ----
+        # ---- Page 2+: Full product catalogue (everything the old Excel
+        # "Products" sheet showed) ----
+        if not products.empty:
+            rows = [[r["name"], r["category"], f"\u20b9{float(r['price']):.2f}",
+                     f"\u20b9{float(r['cost_price']):.2f}", str(int(r["stock"])),
+                     "\u2014" if pd.isna(r["barcode"]) or not r["barcode"] else r["barcode"]]
+                    for _, r in products.iterrows()]
+        else:
+            rows = []
+        _pdf_table_page(pdf, "Product Catalogue",
+                         ["Name", "Category", "Price", "Cost Price", "Stock", "Barcode"], rows,
+                         [0.22, 0.16, 0.13, 0.15, 0.1, 0.24])
+
+        # ---- Page: Top-selling products (bar chart) — kept deliberately
+        # small (roughly half the page) so it doesn't dominate the report. ----
         fig = _pdf_new_page()
         fig.text(0.5, 0.95, "Top-Selling Products", fontsize=16, weight="bold", ha="center", color="#1F2333")
-        ax = fig.add_axes([0.22, 0.12, 0.68, 0.76])
+        ax = fig.add_axes([0.30, 0.40, 0.45, 0.38])
         if sales.empty:
             ax.axis("off")
             fig.text(0.5, 0.5, "No sales recorded yet.", fontsize=11, ha="center", color="#6B7280")
         else:
-            top = sales.groupby("product_name")["quantity"].sum().sort_values(ascending=False).head(10)
+            top = sales.groupby("product_name")["quantity"].sum().sort_values(ascending=False).head(8)
             ax.barh(top.index[::-1], top.values[::-1], color="#6366F1", height=0.55)
-            ax.set_xlabel("Units Sold")
+            ax.set_xlabel("Units Sold", fontsize=8)
             for spine in ["top", "right"]:
                 ax.spines[spine].set_visible(False)
             for spine in ["left", "bottom"]:
                 ax.spines[spine].set_color("#E7E8F5")
-            ax.tick_params(colors="#6B7280", labelsize=9)
+            ax.tick_params(colors="#6B7280", labelsize=7)
         pdf.savefig(fig)
         plt.close(fig)
 
-        # ---- Page 3: Stock by category (pie chart) ----
+        # ---- Page: Stock by category (pie chart) — same smaller sizing ----
         fig = _pdf_new_page()
         fig.text(0.5, 0.95, "Stock by Category", fontsize=16, weight="bold", ha="center", color="#1F2333")
-        ax = fig.add_axes([0.12, 0.12, 0.76, 0.76])
+        ax = fig.add_axes([0.30, 0.38, 0.40, 0.40])
         if products.empty:
             ax.axis("off")
             fig.text(0.5, 0.5, "No products yet.", fontsize=11, ha="center", color="#6B7280")
@@ -888,12 +873,12 @@ def build_pdf_report(products: pd.DataFrame, sales: pd.DataFrame,
             by_cat = products.groupby("category")["stock"].sum()
             colors = ["#6366F1", "#EC4899", "#F59E0B", "#10B981", "#8B5CF6", "#14B8A6"]
             ax.pie(by_cat.values, labels=by_cat.index, autopct="%1.0f%%",
-                   colors=colors[: len(by_cat)], textprops={"color": "#1F2333", "fontsize": 10},
-                   wedgeprops={"edgecolor": "#FFFFFF", "linewidth": 2})
+                   colors=colors[: len(by_cat)], textprops={"color": "#1F2333", "fontsize": 7.5},
+                   wedgeprops={"edgecolor": "#FFFFFF", "linewidth": 1.5})
         pdf.savefig(fig)
         plt.close(fig)
 
-        # ---- Page 4+: Low-stock products table ----
+        # ---- Page: Low-stock products table ----
         if not low_stock.empty:
             rows = [[r["name"], r["category"], str(int(r["stock"])),
                      "\u2014" if pd.isna(r["barcode"]) or not r["barcode"] else r["barcode"]]
@@ -933,27 +918,14 @@ def page_reports(user_id):
             owner_name = st.session_state.user.get("owner_name") or st.session_state.user["username"]
             timestamp = datetime.now(IST).strftime("%Y%m%d_%H%M")
 
-            c1, c2 = st.columns(2)
-            with c1:
-                excel_data = build_excel_report(products, sales)
-                st.download_button(
-                    i18n.t("download_excel"),
-                    data=excel_data,
-                    file_name=f"smartmart_report_{timestamp}.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    type="primary",
-                    use_container_width=True,
-                )
-            with c2:
-                pdf_data = build_pdf_report(products, sales, shop_name, owner_name)
-                st.download_button(
-                    i18n.t("download_pdf"),
-                    data=pdf_data,
-                    file_name=f"smartmart_report_{timestamp}.pdf",
-                    mime="application/pdf",
-                    type="primary",
-                    use_container_width=True,
-                )
+            pdf_data = build_pdf_report(products, sales, shop_name, owner_name)
+            st.download_button(
+                i18n.t("download_pdf"),
+                data=pdf_data,
+                file_name=f"smartmart_report_{timestamp}.pdf",
+                mime="application/pdf",
+                type="primary",
+            )
             st.markdown(
                 f'<div class="small-muted" style="margin-top:10px;">{i18n.t("reports_pdf_note")}</div>',
                 unsafe_allow_html=True,
